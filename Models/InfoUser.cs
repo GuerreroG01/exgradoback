@@ -6,7 +6,7 @@ namespace ExGradoBack.Models
 {
     public class InfoUser
     {
-        [Key, ForeignKey("AuthModel")]
+        [Key, ForeignKey("Auth")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 

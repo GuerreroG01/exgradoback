@@ -7,18 +7,23 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using BCrypt.Net;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExGradoBack.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IAuthRepository _authRepository;
+        private readonly IRolRepository _rolRepository;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IAuthRepository authRepository, IConfiguration configuration)
+        public AuthService(IAuthRepository authRepository, IRolRepository rolRepository, IConfiguration configuration, ILogger<AuthService> logger)
         {
             _authRepository = authRepository;
+            _rolRepository = rolRepository;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Auth>> GetAllUsersAsync()
@@ -59,13 +64,41 @@ namespace ExGradoBack.Services
 
         public async Task<Auth> RegisterAsync(RegisterDto dto)
         {
+            _logger.LogInformation("Iniciando registro para el usuario: {Username}", dto.Username);
+
+            var validationResults = new List<ValidationResult>();
+            var context = new ValidationContext(dto, null, null);
+            if (!Validator.TryValidateObject(dto, context, validationResults, true))
+            {
+                var errors = validationResults.Select(vr => vr.ErrorMessage);
+                var errorMsg = string.Join("; ", errors);
+                _logger.LogWarning("Validación fallida para el DTO de registro: {Errors}", errorMsg);
+                throw new ArgumentException($"Datos inválidos: {errorMsg}");
+            }
+
+            // Verificar si el rol existe
+            var rolExistente = await _rolRepository.GetRoleByIdAsync(dto.RolId);
+            if (rolExistente == null)
+            {
+                _logger.LogWarning("No se encontró el rol con ID: {RolId}", dto.RolId);
+                throw new Exception($"El rol '{dto.RolId}' no existe.");
+            }
+
+            // Crear nuevo usuario
             var newUser = new Auth
             {
                 Username = dto.Username,
                 Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Rol = dto.Rol,
+                RolId = rolExistente.Id,
                 FechaRegistro = DateTime.Now,
-                InfoUser = dto.InfoUser != null ? new InfoUser
+            };
+
+            // Mapear InfoUser si existe
+            if (dto.InfoUser != null)
+            {
+                _logger.LogInformation("Datos de InfoUser recibidos: {@InfoUser}", dto.InfoUser);
+
+                newUser.InfoUser = new InfoUser
                 {
                     Nombres = dto.InfoUser.Nombres,
                     Apellidos = dto.InfoUser.Apellidos,
@@ -74,16 +107,22 @@ namespace ExGradoBack.Services
                     Nacimiento = dto.InfoUser.Nacimiento,
                     Genero = dto.InfoUser.Genero,
                     Telefono = dto.InfoUser.Telefono
-                } : null
-            };
+                };
 
-            // Solo si InfoUser fue creado, asignamos la relación inversa
-            if (newUser.InfoUser != null)
-            {
+                // Relacionar ambos lados (clave foránea)
                 newUser.InfoUser.Auth = newUser;
             }
+            else
+            {
+                _logger.LogInformation("No se recibió InfoUser para el usuario: {Username}", dto.Username);
+            }
 
-            return await _authRepository.AddAsync(newUser);
+            // Guardar en repositorio / base de datos
+            _logger.LogInformation("Usuario mapeado correctamente. Guardando en base de datos.");
+            var result = await _authRepository.AddAsync(newUser);
+            _logger.LogInformation("Usuario registrado con ID: {UserId}", result.Id);
+
+            return result;
         }
         public async Task<bool> UserExistsAsync(string username)
         {
@@ -101,11 +140,11 @@ namespace ExGradoBack.Services
                 new Claim(JwtRegisteredClaimNames.Sub, admin.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat,
-                          new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
-                          ClaimValueTypes.Integer64),
+                        new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        ClaimValueTypes.Integer64),
                 new Claim("id", admin.Id.ToString()),
-                new Claim("rol", admin.Rol),
-                new Claim(ClaimTypes.Role, admin.Rol),
+                new Claim("rol", admin.Rol?.Nombre ?? "SinRol"),
+                new Claim(ClaimTypes.Role, admin.Rol?.Nombre ?? "SinRol"),
                 new Claim(JwtRegisteredClaimNames.Exp, expiresAtUnix.ToString(), ClaimValueTypes.Integer64)
             };
             
@@ -117,7 +156,7 @@ namespace ExGradoBack.Services
                 issuer: "ExGradoSystem.com",
                 audience: "ExGradoSystem.com",
                 claims: claims,
-                expires: expiresAt, // Esto ya maneja la expiración
+                expires: expiresAt,
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

@@ -22,7 +22,10 @@ namespace ExGradoBack.Models
         [Required]
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
         [Required]
-        public required string Rol { get; set; }
+        public int RolId { get; set; }
+        [JsonIgnore]
+        public virtual Rol? Rol { get; set; }
+
         [JsonIgnore]
         public InfoUser? InfoUser { get; set; }
 

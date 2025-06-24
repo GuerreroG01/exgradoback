@@ -9,6 +9,7 @@ namespace ExGradoBack.Data
 
         public DbSet<Auth> Auth { get; set; }
         public DbSet<InfoUser> InfoUsers { get; set; }
+        public DbSet<Rol> Rol { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

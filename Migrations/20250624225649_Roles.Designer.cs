@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExGradoBack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250619235943_Autenticacion")]
-    partial class Autenticacion
+    [Migration("20250624225649_Roles")]
+    partial class Roles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,9 +41,8 @@ namespace ExGradoBack.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("Rol")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -51,6 +50,8 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RolId");
 
                     b.ToTable("Auth");
                 });
@@ -94,6 +95,35 @@ namespace ExGradoBack.Migrations
                     b.ToTable("InfoUsers");
                 });
 
+            modelBuilder.Entity("ExGradoBack.Models.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rol");
+                });
+
+            modelBuilder.Entity("ExGradoBack.Models.Auth", b =>
+                {
+                    b.HasOne("ExGradoBack.Models.Rol", "Rol")
+                        .WithMany()
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("ExGradoBack.Models.InfoUser", b =>
                 {
                     b.HasOne("ExGradoBack.Models.Auth", "Auth")
@@ -107,8 +137,7 @@ namespace ExGradoBack.Migrations
 
             modelBuilder.Entity("ExGradoBack.Models.Auth", b =>
                 {
-                    b.Navigation("InfoUser")
-                        .IsRequired();
+                    b.Navigation("InfoUser");
                 });
 #pragma warning restore 612, 618
         }

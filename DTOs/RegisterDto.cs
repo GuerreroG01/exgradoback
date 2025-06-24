@@ -2,7 +2,7 @@ public class RegisterDto
 {
     public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
-    public string Rol { get; set; } = null!;
+    public int RolId { get; set; }
     public InfoUserDto? InfoUser { get; set; } = null!;
 }
 

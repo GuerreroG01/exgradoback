@@ -25,8 +25,9 @@ public class AuthRepository : IAuthRepository
 
     public async Task<Auth?> GetByUsernameAsync(string username)
     {
-        return await _context.Auth.Include(u => u.InfoUser)
-                                        .FirstOrDefaultAsync(u => u.Username == username);
+        return await _context.Auth
+                            .Include(u => u.InfoUser)
+                            .FirstOrDefaultAsync(u => u.Username == username);
     }
 
     public async Task<Auth> AddAsync(Auth user)

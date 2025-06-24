@@ -60,7 +60,14 @@ namespace ExGradoBack
             });
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+            builder.Services.AddScoped<IRolService, RolService>();
+            builder.Services.AddScoped<IRolRepository, RolRepository>();
 
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            builder.Logging.AddSerilog();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
