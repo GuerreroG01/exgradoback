@@ -64,7 +64,6 @@ namespace ExGradoBack.Services
 
         public async Task<Auth> RegisterAsync(RegisterDto dto)
         {
-            _logger.LogInformation("Iniciando registro para el usuario: {Username}", dto.Username);
 
             var validationResults = new List<ValidationResult>();
             var context = new ValidationContext(dto, null, null);
@@ -76,15 +75,12 @@ namespace ExGradoBack.Services
                 throw new ArgumentException($"Datos inválidos: {errorMsg}");
             }
 
-            // Verificar si el rol existe
             var rolExistente = await _rolRepository.GetRoleByIdAsync(dto.RolId);
             if (rolExistente == null)
             {
-                _logger.LogWarning("No se encontró el rol con ID: {RolId}", dto.RolId);
                 throw new Exception($"El rol '{dto.RolId}' no existe.");
             }
 
-            // Crear nuevo usuario
             var newUser = new Auth
             {
                 Username = dto.Username,
@@ -93,10 +89,8 @@ namespace ExGradoBack.Services
                 FechaRegistro = DateTime.Now,
             };
 
-            // Mapear InfoUser si existe
             if (dto.InfoUser != null)
             {
-                _logger.LogInformation("Datos de InfoUser recibidos: {@InfoUser}", dto.InfoUser);
 
                 newUser.InfoUser = new InfoUser
                 {
@@ -109,18 +103,13 @@ namespace ExGradoBack.Services
                     Telefono = dto.InfoUser.Telefono
                 };
 
-                // Relacionar ambos lados (clave foránea)
                 newUser.InfoUser.Auth = newUser;
             }
             else
             {
                 _logger.LogInformation("No se recibió InfoUser para el usuario: {Username}", dto.Username);
             }
-
-            // Guardar en repositorio / base de datos
-            _logger.LogInformation("Usuario mapeado correctamente. Guardando en base de datos.");
             var result = await _authRepository.AddAsync(newUser);
-            _logger.LogInformation("Usuario registrado con ID: {UserId}", result.Id);
 
             return result;
         }

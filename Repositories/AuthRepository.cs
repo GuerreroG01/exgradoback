@@ -27,6 +27,7 @@ public class AuthRepository : IAuthRepository
     {
         return await _context.Auth
                             .Include(u => u.InfoUser)
+                            .Include(a => a.Rol)
                             .FirstOrDefaultAsync(u => u.Username == username);
     }
 
