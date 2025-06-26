@@ -136,7 +136,7 @@ namespace ExGradoBack.Services
                 new Claim(ClaimTypes.Role, admin.Rol?.Nombre ?? "SinRol"),
                 new Claim(JwtRegisteredClaimNames.Exp, expiresAtUnix.ToString(), ClaimValueTypes.Integer64)
             };
-            
+
             var jsonWebTokenSecret = Environment.GetEnvironmentVariable("JsonWebTokenSecret") ?? "";
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jsonWebTokenSecret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -149,6 +149,17 @@ namespace ExGradoBack.Services
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        public async Task<Auth> GetUserByUsernameAsync(string username)
+        {
+            var user = await _authRepository.GetByUsernameAsync(username);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"Usuario con username '{username}' no encontrado.");
+            }
+
+            return user;
         }
     }
 }

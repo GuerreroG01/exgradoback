@@ -16,5 +16,6 @@ namespace ExGradoBack.Services
         Task<Auth> RegisterAsync(RegisterDto dto);
 
         Task<bool> UserExistsAsync(string username);
+        Task<Auth> GetUserByUsernameAsync(string username);
     }
 }

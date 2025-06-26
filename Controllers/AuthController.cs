@@ -75,5 +75,18 @@ namespace ExGradoBack.Controllers
 
             return NoContent();
         }
+        [HttpGet("find-username")]
+        public async Task<ActionResult<Auth>> GetUserByUsername([FromQuery] string username)
+        {
+            try
+            {
+                var user = await _authService.GetUserByUsernameAsync(username);
+                return Ok(user);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
     }
 }

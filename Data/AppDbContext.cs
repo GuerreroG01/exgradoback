@@ -18,6 +18,10 @@ namespace ExGradoBack.Data
                 .WithOne(i => i.Auth)
                 .HasForeignKey<InfoUser>(i => i.Id);
 
+            modelBuilder.Entity<Auth>()
+                .HasIndex(a => a.Username)
+                .HasDatabaseName("IX_Auth_Username"); 
+
             base.OnModelCreating(modelBuilder);
         }
     }
