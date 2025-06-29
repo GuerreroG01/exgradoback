@@ -62,6 +62,8 @@ namespace ExGradoBack
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IRolService, RolService>();
             builder.Services.AddScoped<IRolRepository, RolRepository>();
+            builder.Services.AddScoped<IBackupService, BackupService>();
+            builder.Services.AddScoped<IBackupRepository, BackupRepository>();
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
