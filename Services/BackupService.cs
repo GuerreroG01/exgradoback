@@ -43,7 +43,7 @@ namespace ExGradoBack.Services
 
             await _backupRepository.UpdateBackupConfigAsync(id, backup);
         }
-        public Task<(bool Success, string Message, string PathOrError)> CreateBackupAsync()
+        public Task<(bool Success, string Message, byte[] BackupBytes, string FileName)> CreateBackupAsync()
             => _backupRepository.CreateBackupAsync();
 
         public Task<(bool Success, string Message)> RestoreBackupAsync(string backupFileName)

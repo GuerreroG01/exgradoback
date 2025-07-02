@@ -55,7 +55,8 @@ namespace ExGradoBack
                     policy
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .WithExposedHeaders("Content-Disposition"); // <-- Para que el navegador lea la información del encabezado Content-Disposition en una respuesta
                 });
             });
             builder.Services.AddScoped<IAuthService, AuthService>();

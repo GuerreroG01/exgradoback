@@ -34,31 +34,56 @@ namespace ExGradoBack.Controllers
             await _backupService.UpdateBackupConfigAsync(id, backup);
             return Ok();
         }
-        [HttpPost("crear")]
-        public async Task<IActionResult> CreateBackup()
+        [HttpGet("descargar")]
+        public async Task<IActionResult> DownloadBackup()
         {
             var result = await _backupService.CreateBackupAsync();
-            if (result.Success)
-                return Ok(new { message = result.Message, path = result.PathOrError });
 
-            return StatusCode(500, new { message = result.Message, error = result.PathOrError });
+            if (!result.Success)
+                return StatusCode(500, new { message = result.Message });
+
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{result.FileName}\"");
+
+            return File(result.BackupBytes, "application/octet-stream");
         }
+
         [HttpPost("restaurar")]
-        public async Task<IActionResult> RestoreBackup([FromBody] string backupFileName)
+        public async Task<IActionResult> RestaurarBackup([FromForm] IFormFile backupFile)
         {
-            var result = await _backupService.RestoreBackupAsync(backupFileName);
-            if (result.Success)
-                return Ok(new { message = result.Message });
+            if (backupFile == null || backupFile.Length == 0)
+                return BadRequest("No se recibió el archivo de respaldo.");
 
-            return StatusCode(500, new { message = result.Message });
+            var tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+            try
+            {
+                using (var stream = System.IO.File.Create(tempFilePath))
+                {
+                    await backupFile.CopyToAsync(stream);
+                }
+
+                var result = await _backupService.RestoreBackupAsync(tempFilePath);
+
+                if (result.Success)
+                    return Ok(result.Message);
+
+                return BadRequest(result.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error al restaurar el respaldo: {ex.Message}");
+            }
+            finally
+            {
+                if (System.IO.File.Exists(tempFilePath))
+                {
+                    System.IO.File.Delete(tempFilePath);
+                }
+            }
         }
-        [HttpGet("abrir")]
-        public IActionResult OpenBackup([FromQuery] string path)
+        public class RestoreBackupRequest
         {
-            if (_backupService.OpenBackup(path, out string error))
-                return Ok(new { message = "Archivo de respaldo abierto correctamente." });
-
-            return StatusCode(500, new { message = "Error al abrir el archivo de respaldo", error });
+            public required string FileName { get; set; }
         }
     }
 }

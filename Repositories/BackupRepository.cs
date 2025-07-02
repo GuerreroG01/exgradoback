@@ -94,20 +94,16 @@ namespace ExGradoBack.Repositories
                 throw new Exception("Error al actualizar la configuración de respaldo.", ex);
             }
         }
-        public async Task<(bool Success, string Message, string PathOrError)> CreateBackupAsync()
+        public async Task<(bool Success, string Message, byte[] BackupBytes, string FileName)> CreateBackupAsync()
         {
             try
             {
-                string backupFilePath = Path.Combine(_backupDirectory, $"BancoNetDb_{DateTime.Now:yyyyMMddHHmmss}.sql");
+                string fileName = $"ExGradoBackup_{DateTime.Now:yyyyMMddHHmmss}.sql";
 
-                if (!Directory.Exists(_backupDirectory))
-                    Directory.CreateDirectory(_backupDirectory);
-
-                string arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName} > \"{backupFilePath}\"";
-
-                var psi = new ProcessStartInfo("cmd.exe")
+                var psi = new ProcessStartInfo
                 {
-                    RedirectStandardInput = true,
+                    FileName = "mysqldump",
+                    Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName}",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -117,36 +113,34 @@ namespace ExGradoBack.Repositories
                 using var process = new Process { StartInfo = psi };
                 process.Start();
 
-                await process.StandardInput.WriteLineAsync($"mysqldump {arguments}");
-                process.StandardInput.Close();
+                using var ms = new MemoryStream();
+                await process.StandardOutput.BaseStream.CopyToAsync(ms);
+
                 await process.WaitForExitAsync();
 
-                var errorOutput = await process.StandardError.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
 
-                if (errorOutput.Contains("[Warning] Using a password on the command line interface can be insecure"))
-                    return (true, "Respaldo creado exitosamente", backupFilePath);
+                if (process.ExitCode != 0 || (!string.IsNullOrEmpty(error) && !error.Contains("Using a password")))
+                    return (false, "Error al crear el respaldo", null!, fileName);
 
-                return (false, "Error al crear el respaldo", errorOutput);
+                return (true, "Respaldo creado exitosamente", ms.ToArray(), fileName);
             }
             catch (Exception ex)
             {
-                return (false, "Excepción al crear el respaldo", ex.Message);
+                return (false, "Excepción al crear el respaldo", null!, $"backup.sql:{ex.Message}");
             }
         }
 
-        public async Task<(bool Success, string Message)> RestoreBackupAsync(string backupFileName)
+        public async Task<(bool Success, string Message)> RestoreBackupAsync(string backupFilePath)
         {
-            string fullPath = Path.Combine(_backupDirectory, backupFileName);
-
             try
             {
-                if (!File.Exists(fullPath))
+                if (!File.Exists(backupFilePath))
                     return (false, "El archivo de respaldo no existe.");
 
-                string arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName} < \"{fullPath}\"";
-
-                var psi = new ProcessStartInfo("cmd.exe")
+                var psi = new ProcessStartInfo("mysql")
                 {
+                    Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName}",
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -157,47 +151,31 @@ namespace ExGradoBack.Repositories
                 using var process = new Process { StartInfo = psi };
                 process.Start();
 
-                await process.StandardInput.WriteLineAsync($"mysql {arguments}");
+                using var fileStream = new StreamReader(backupFilePath);
+                string? line;
+                while ((line = await fileStream.ReadLineAsync()) != null)
+                {
+                    await process.StandardInput.WriteLineAsync(line);
+                }
+
                 process.StandardInput.Close();
                 await process.WaitForExitAsync();
 
-                string errorOutput = await process.StandardError.ReadToEndAsync();
+                string stdOutput = await process.StandardOutput.ReadToEndAsync();
+                string stdError = await process.StandardError.ReadToEndAsync();
 
-                if (errorOutput.Contains("[Warning] Using a password on the command line interface can be insecure"))
-                    return (true, "Copia de seguridad restaurada exitosamente");
-
-                return (false, $"Error al restaurar el backup: {errorOutput}");
+                if (process.ExitCode == 0)
+                {
+                    return (true, "Copia de seguridad restaurada exitosamente.");
+                }
+                else
+                {
+                    return (false, $"Error al restaurar el backup: {stdError}");
+                }
             }
             catch (Exception ex)
             {
                 return (false, $"Error al restaurar el respaldo: {ex.Message}");
-            }
-        }
-
-        public bool OpenBackup(string backupPath, out string error)
-        {
-            try
-            {
-                if (!File.Exists(backupPath))
-                {
-                    error = "El archivo de respaldo no existe.";
-                    return false;
-                }
-
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = $"/select,\"{backupPath}\"",
-                    UseShellExecute = true
-                });
-
-                error = string.Empty;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                error = ex.Message;
-                return false;
             }
         }
     }
