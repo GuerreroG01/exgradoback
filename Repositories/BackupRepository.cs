@@ -17,7 +17,6 @@ namespace ExGradoBack.Repositories
         private string dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "undefined";
         private string dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "undefined";
         private string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
-        private readonly string _backupDirectory = @"C:\Backups";
         public BackupRepository(AppDbContext context, ILogger<BackupRepository> logger)
         {
             _context = context;

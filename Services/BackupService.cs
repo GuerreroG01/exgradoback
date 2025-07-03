@@ -48,8 +48,5 @@ namespace ExGradoBack.Services
 
         public Task<(bool Success, string Message)> RestoreBackupAsync(string backupFileName)
             => _backupRepository.RestoreBackupAsync(backupFileName);
-
-        public bool OpenBackup(string backupPath, out string error)
-            => _backupRepository.OpenBackup(backupPath, out error);
     }
 }
