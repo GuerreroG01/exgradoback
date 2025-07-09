@@ -8,6 +8,10 @@ using dotenv.net;
 using ExGradoBack.Data;
 using ExGradoBack.Repositories;
 using ExGradoBack.Services;
+using Hangfire;
+using Hangfire.MySql;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ExGradoBack
 {
@@ -23,7 +27,7 @@ namespace ExGradoBack
             var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "undefined";
             var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "undefined";
             
-            var connectionString = $"Server={dbHost};Database={dbName};User Id={dbUser};Password={dbPassword};";
+            var connectionString = $"Server={dbHost};Database={dbName};User Id={dbUser};Password={dbPassword};Allow User Variables=true;";
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 41)),
                 mySqlOptions => mySqlOptions.EnableRetryOnFailure()));
@@ -31,6 +35,10 @@ namespace ExGradoBack
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddControllers();
+
+            builder.Services.AddHangfire(config => 
+                config.UseStorage(new MySqlStorage(connectionString, new MySqlStorageOptions())));
+            builder.Services.AddHangfireServer();
 
             /*builder.Services.AddCors(options =>
             {
@@ -81,6 +89,8 @@ namespace ExGradoBack
             app.UseHttpsRedirection();
             app.UseCors("AllowAll");
             app.UseAuthorization();
+            app.UseHangfireDashboard();
+            ExGradoBack.Jobs.HangfireJobsConfig.ConfigurateJobs();
             app.MapControllers();
 
             var summaries = new[]

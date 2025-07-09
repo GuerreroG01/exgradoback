@@ -30,7 +30,9 @@ namespace ExGradoBack.Repositories
                 return null;
             }
 
-            var backup = await _context.Backup.FirstOrDefaultAsync();
+            var backup = await _context.Backup
+                .OrderBy(b => b.Id)
+                .FirstOrDefaultAsync();
             return backup;
         }
         public async Task<Backup?> GetBackupByIdAsync(int id)

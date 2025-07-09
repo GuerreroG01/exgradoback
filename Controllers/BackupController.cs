@@ -47,6 +47,7 @@ namespace ExGradoBack.Controllers
             return File(result.BackupBytes, "application/octet-stream");
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("restaurar")]
         public async Task<IActionResult> RestaurarBackup([FromForm] IFormFile backupFile)
         {
