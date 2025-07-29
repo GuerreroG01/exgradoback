@@ -12,10 +12,11 @@ namespace ExGradoBack.Services
         Task<Auth> UpdateUserAsync(Auth updatedUser);
         Task<bool> DeleteUserAsync(int id);
 
-        Task<string?> LoginAsync(string username, string password);
+        Task<string?> LoginAsync(string username, string password, bool isLogin);
         Task<Auth> RegisterAsync(RegisterDto dto);
 
         Task<bool> UserExistsAsync(string username);
         Task<Auth> GetUserByUsernameAsync(string username);
+        String GenerateJwtToken(Auth user);
     }
 }

@@ -65,17 +65,21 @@ namespace ExGradoBack.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("tinyint(1)")
+                        .HasAnnotation("Relational:JsonPropertyName", "activo");
 
                     b.Property<DateTime>("Fecha_Repaldo")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime(6)")
+                        .HasAnnotation("Relational:JsonPropertyName", "fecha_Respaldo");
 
                     b.Property<DateTime?>("Fecha_RespaldoAnterior")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime(6)")
+                        .HasAnnotation("Relational:JsonPropertyName", "fecha_RespaldoAnterior");
 
                     b.Property<string>("Frecuencia_Respaldo")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("longtext")
+                        .HasAnnotation("Relational:JsonPropertyName", "frecuencia_Respaldo");
 
                     b.HasKey("Id");
 
@@ -88,10 +92,15 @@ namespace ExGradoBack.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("Apellidos")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<int>("AuthId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -117,6 +126,9 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthId")
+                        .IsUnique();
 
                     b.ToTable("InfoUsers");
                 });
@@ -154,7 +166,7 @@ namespace ExGradoBack.Migrations
                 {
                     b.HasOne("ExGradoBack.Models.Auth", "Auth")
                         .WithOne("InfoUser")
-                        .HasForeignKey("ExGradoBack.Models.InfoUser", "Id")
+                        .HasForeignKey("ExGradoBack.Models.InfoUser", "AuthId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

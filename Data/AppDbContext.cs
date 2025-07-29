@@ -17,7 +17,7 @@ namespace ExGradoBack.Data
             modelBuilder.Entity<Auth>()
                 .HasOne(a => a.InfoUser)
                 .WithOne(i => i.Auth)
-                .HasForeignKey<InfoUser>(i => i.Id);
+                .HasForeignKey<InfoUser>(i => i.AuthId);
 
             modelBuilder.Entity<Auth>()
                 .HasIndex(a => a.Username)

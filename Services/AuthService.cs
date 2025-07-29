@@ -45,7 +45,20 @@ namespace ExGradoBack.Services
 
         public async Task<Auth> UpdateUserAsync(Auth updatedUser)
         {
-            return await _authRepository.UpdateAsync(updatedUser);
+            var existingUser = await _authRepository.GetByIdAsync(updatedUser.Id);
+            if (existingUser == null)
+                throw new KeyNotFoundException("Usuario no encontrado.");
+
+            existingUser.Username = updatedUser.Username;
+            existingUser.RolId = updatedUser.RolId;
+            existingUser.FechaRegistro = updatedUser.FechaRegistro;
+
+            if (!string.IsNullOrEmpty(updatedUser.Password) && !BCrypt.Net.BCrypt.Verify(updatedUser.Password, existingUser.Password))
+            {
+                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
+            }
+
+            return await _authRepository.UpdateAsync(existingUser);
         }
 
         public async Task<bool> DeleteUserAsync(int id)
@@ -53,18 +66,20 @@ namespace ExGradoBack.Services
             return await _authRepository.DeleteAsync(id);
         }
 
-        public async Task<string?> LoginAsync(string username, string password)
+        public async Task<string?> LoginAsync(string username, string password, bool isLogin)
         {
             var user = await _authRepository.GetByUsernameAsync(username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return null;
 
-            return GenerateJwtToken(user);
+            if (isLogin)
+                return GenerateJwtToken(user);
+
+            return string.Empty;
         }
 
         public async Task<Auth> RegisterAsync(RegisterDto dto)
         {
-
             var validationResults = new List<ValidationResult>();
             var context = new ValidationContext(dto, null, null);
             if (!Validator.TryValidateObject(dto, context, validationResults, true))
@@ -91,7 +106,6 @@ namespace ExGradoBack.Services
 
             if (dto.InfoUser != null)
             {
-
                 newUser.InfoUser = new InfoUser
                 {
                     Nombres = dto.InfoUser.Nombres,
@@ -102,8 +116,6 @@ namespace ExGradoBack.Services
                     Genero = dto.InfoUser.Genero,
                     Telefono = dto.InfoUser.Telefono
                 };
-
-                newUser.InfoUser.Auth = newUser;
             }
             else
             {
@@ -119,7 +131,7 @@ namespace ExGradoBack.Services
             return user != null;
         }
 
-        private string GenerateJwtToken(Auth admin)
+        public string GenerateJwtToken(Auth admin)
         {
             DateTime expiresAt = DateTime.UtcNow.AddMinutes(60);
             long expiresAtUnix = new DateTimeOffset(expiresAt).ToUnixTimeSeconds();

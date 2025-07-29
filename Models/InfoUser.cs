@@ -6,9 +6,16 @@ namespace ExGradoBack.Models
 {
     public class InfoUser
     {
-        [Key, ForeignKey("Auth")]
+        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
+        [Required]
+        public int AuthId { get; set; }
+
+        [ForeignKey("AuthId")]
+        [JsonIgnore]
+        public Auth? Auth { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -17,6 +24,7 @@ namespace ExGradoBack.Models
         [Required]
         [StringLength(100)]
         public required string Apellidos { get; set; }
+
         public string? FotoPerfil { get; set; }
 
         [Required]
@@ -25,11 +33,11 @@ namespace ExGradoBack.Models
 
         [Required]
         public DateTime Nacimiento { get; set; }
+
         [Required]
         public required string Genero { get; set; }
+
         [Required]
         public required string Telefono { get; set; }
-        [JsonIgnore]
-        public Auth? Auth { get; set; }
     }
 }

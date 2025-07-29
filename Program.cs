@@ -73,6 +73,8 @@ namespace ExGradoBack
             builder.Services.AddScoped<IRolRepository, RolRepository>();
             builder.Services.AddScoped<IBackupService, BackupService>();
             builder.Services.AddScoped<IBackupRepository, BackupRepository>();
+            builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+            builder.Services.AddScoped<IProfileService, ProfileService>();
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
@@ -85,11 +87,14 @@ namespace ExGradoBack
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.UseDeveloperExceptionPage();
             }
+            
             app.UseHttpsRedirection();
             app.UseCors("AllowAll");
             app.UseAuthorization();
             app.UseHangfireDashboard();
+            app.UseStaticFiles(); //Servir archivos estáticos en wwwroot
             ExGradoBack.Jobs.HangfireJobsConfig.ConfigurateJobs();
             app.MapControllers();
 

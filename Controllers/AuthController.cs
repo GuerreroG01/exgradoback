@@ -48,22 +48,40 @@ namespace ExGradoBack.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<object>> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.LoginAsync(loginDto.Username, loginDto.Password);
+            var token = await _authService.LoginAsync(loginDto.Username, loginDto.Password, loginDto.isLogin);
+
             if (token == null)
                 return Unauthorized("Credenciales inválidas.");
+
+            if (!loginDto.isLogin)
+                return Ok("Credenciales válidas.");
 
             return Ok(new { token });
         }
 
         // PUT: api/auth/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<Auth>> Update(int id, [FromBody] Auth updatedUser)
+        public async Task<ActionResult<object>> UpdateUser(int id, [FromBody] Auth updatedUser)
         {
             if (id != updatedUser.Id)
-                return BadRequest("El ID no coincide.");
+                return BadRequest("ID no coincide.");
 
-            var result = await _authService.UpdateUserAsync(updatedUser);
-            return Ok(result);
+            try
+            {
+                var user = await _authService.UpdateUserAsync(updatedUser);
+
+                var newToken = _authService.GenerateJwtToken(user);
+
+                return Ok(new { token = newToken });
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al actualizar usuario: {ex.Message}");
+            }
         }
 
         // DELETE: api/auth/5
