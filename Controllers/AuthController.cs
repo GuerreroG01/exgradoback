@@ -106,5 +106,11 @@ namespace ExGradoBack.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+        [HttpGet("totalUsers")]
+        public async Task<IActionResult> GetTotalUsers()
+        {
+            int totalUsers = await _authService.GetTotalUsersAsync();
+            return Ok(totalUsers);
+        }
     }
 }

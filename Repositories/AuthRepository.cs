@@ -54,4 +54,8 @@ public class AuthRepository : IAuthRepository
         await _context.SaveChangesAsync();
         return true;
     }
+    public async Task<int> CountUsersAsync()
+    {
+        return await _context.Auth.CountAsync();
+    }
 }

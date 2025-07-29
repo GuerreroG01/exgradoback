@@ -12,6 +12,7 @@ namespace ExGradoBack.Repositories
         Task<Auth> AddAsync(Auth newUser);
         Task<Auth> UpdateAsync(Auth updatedUser);
         Task<bool> DeleteAsync(int id);
+        Task<int> CountUsersAsync();
 
     }
 }

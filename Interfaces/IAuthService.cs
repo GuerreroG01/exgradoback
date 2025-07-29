@@ -18,5 +18,6 @@ namespace ExGradoBack.Services
         Task<bool> UserExistsAsync(string username);
         Task<Auth> GetUserByUsernameAsync(string username);
         String GenerateJwtToken(Auth user);
+        Task<int> GetTotalUsersAsync();
     }
 }

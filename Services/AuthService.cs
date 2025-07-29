@@ -173,5 +173,9 @@ namespace ExGradoBack.Services
 
             return user;
         }
+        public async Task<int> GetTotalUsersAsync()
+        {
+            return await _authRepository.CountUsersAsync();
+        }
     }
 }

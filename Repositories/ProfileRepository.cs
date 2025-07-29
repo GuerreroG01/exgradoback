@@ -151,14 +151,12 @@ namespace ExGradoBack.Repositories
                 {
                     _logger.LogInformation("Se recibió una nueva foto de perfil para AuthId: {AuthId}", profile.AuthId);
 
-                    // Guardar nueva foto
                     var newFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
                     var filePath = Path.Combine(imagePath, newFileName);
 
                     await using var stream = new FileStream(filePath, FileMode.Create);
                     await photoFile.CopyToAsync(stream);
 
-                    // Borrar foto vieja si existe y no es la default
                     if (!string.IsNullOrEmpty(existingProfile.FotoPerfil) && existingProfile.FotoPerfil != _defaultImageName)
                     {
                         var oldFilePath = Path.Combine(imagePath, existingProfile.FotoPerfil);
