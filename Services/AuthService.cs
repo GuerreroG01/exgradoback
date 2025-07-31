@@ -49,16 +49,35 @@ namespace ExGradoBack.Services
             if (existingUser == null)
                 throw new KeyNotFoundException("Usuario no encontrado.");
 
-            existingUser.Username = updatedUser.Username;
-            existingUser.RolId = updatedUser.RolId;
-            existingUser.FechaRegistro = updatedUser.FechaRegistro;
-
-            if (!string.IsNullOrEmpty(updatedUser.Password) && !BCrypt.Net.BCrypt.Verify(updatedUser.Password, existingUser.Password))
+            if (!string.IsNullOrWhiteSpace(updatedUser.Username) && updatedUser.Username != existingUser.Username)
             {
-                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
+                existingUser.Username = updatedUser.Username;
             }
 
-            return await _authRepository.UpdateAsync(existingUser);
+            if (!string.IsNullOrWhiteSpace(updatedUser.Password))
+            {
+                if (!updatedUser.Password.StartsWith("$2a$"))
+                {
+                    _logger.LogInformation("Contraseña en texto plano recibida: {Password}", updatedUser.Password);
+                    existingUser.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
+                }
+                else
+                {
+                    _logger.LogWarning("Se recibió una contraseña ya hasheada, omitiendo actualización.");
+                }
+            }
+            if (updatedUser.RolId != 0 && updatedUser.RolId != existingUser.RolId)
+            {
+                existingUser.RolId = updatedUser.RolId;
+            }
+            if (updatedUser.FechaRegistro != default && updatedUser.FechaRegistro != existingUser.FechaRegistro)
+            {
+                existingUser.FechaRegistro = updatedUser.FechaRegistro;
+            }
+            await _authRepository.UpdateAsync(existingUser);
+            var rol = await _rolRepository.GetRoleByIdAsync(existingUser.RolId);
+            existingUser.Rol = rol;
+            return existingUser;
         }
 
         public async Task<bool> DeleteUserAsync(int id)
