@@ -7,10 +7,25 @@ namespace ExGradoBack.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        //Modelos para el Manejo de usuarios en el sistema.
         public DbSet<Auth> Auth { get; set; }
         public DbSet<InfoUser> InfoUsers { get; set; }
         public DbSet<Rol> Rol { get; set; }
+        //Modelo para Respaldo
         public DbSet<Backup> Backup { get; set; }
+
+        //Modelos para el Negocio
+        public DbSet<VehiculoInfo> VehiculoInfo { get; set; }
+        public DbSet<MarcaRepuesto> MarcaRepuesto { get; set; }
+        public DbSet<Repuesto> Repuesto { get; set; }
+        public DbSet<Cliente> Cliente { get; set; }
+        public DbSet<Proveedor> Proveedor { get; set; }
+
+        public DbSet<Factura> Factura { get; set; }
+        public DbSet<DetalleFactura> DetalleFactura { get; set; }
+
+        public DbSet<OrdenCompra> OrdenCompra { get; set; }
+        public DbSet<DetalleOrdenCompra> DetalleOrdenCompra { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -19,9 +34,82 @@ namespace ExGradoBack.Data
                 .WithOne(i => i.Auth)
                 .HasForeignKey<InfoUser>(i => i.AuthId);
 
+            modelBuilder.Entity<Repuesto>()
+            .HasOne(r => r.VehiculoInfo)
+            .WithMany()
+            .HasForeignKey(r => r.VehiculoInfoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Repuesto>()
+                .HasOne(r => r.MarcaRepuesto)
+                .WithMany()
+                .HasForeignKey(r => r.MarcaRepuestoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Factura>()
+                .HasOne(f => f.Cliente)
+                .WithMany()
+                .HasForeignKey(f => f.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DetalleFactura>()
+                .HasOne(df => df.Factura)
+                .WithMany(f => f.Detalles)
+                .HasForeignKey(df => df.FacturaId);
+
+            modelBuilder.Entity<DetalleFactura>()
+                .HasOne(df => df.Repuesto)
+                .WithMany()
+                .HasForeignKey(df => df.RepuestoId);
+
+            modelBuilder.Entity<OrdenCompra>()
+                .HasOne(oc => oc.Proveedor)
+                .WithMany()
+                .HasForeignKey(oc => oc.ProveedorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DetalleOrdenCompra>()
+                .HasOne(doc => doc.OrdenCompra)
+                .WithMany(oc => oc.Detalles)
+                .HasForeignKey(doc => doc.OrdenCompraId);
+
+            modelBuilder.Entity<DetalleOrdenCompra>()
+                .HasOne(doc => doc.Repuesto)
+                .WithMany()
+                .HasForeignKey(doc => doc.RepuestoId);
+
+            //Datos Predeterminados
+            modelBuilder.Entity<Rol>().HasData(
+                new Rol { Id = 1, Nombre = "Administrador" },
+                new Rol { Id = 2, Nombre = "Usuario" }
+            );
+            modelBuilder.Entity<Auth>().HasData(
+            new Auth
+            {
+                Id = 1,
+                Username = "admin",
+                Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
+                FechaRegistro = DateTime.Now,
+                RolId = 1
+            }
+        );
+            //Indices
             modelBuilder.Entity<Auth>()
                 .HasIndex(a => a.Username)
-                .HasDatabaseName("IX_Auth_Username"); 
+                .HasDatabaseName("IX_Auth_Username");
+
+            modelBuilder.Entity<VehiculoInfo>()
+                .HasIndex(v => new { v.Marca, v.Anio })
+                .HasDatabaseName("IX_VehiculoInfo_Marca_Anio");
+
+            modelBuilder.Entity<MarcaRepuesto>()
+                .HasIndex(m => m.Nombre)
+                .HasDatabaseName("IX_Nombre_Marca");
+
+            modelBuilder.Entity<Repuesto>()
+                .HasIndex(r => r.Nombre)
+                .HasDatabaseName("IX_Nombre_Repuesto");
+
 
             base.OnModelCreating(modelBuilder);
         }

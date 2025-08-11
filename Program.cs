@@ -75,6 +75,12 @@ namespace ExGradoBack
             builder.Services.AddScoped<IBackupRepository, BackupRepository>();
             builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
             builder.Services.AddScoped<IProfileService, ProfileService>();
+            builder.Services.AddScoped<IVehiculoInfoRepository, VehiculoInfoRepository>();
+            builder.Services.AddScoped<IVehiculoInfoService, VehiculoInfoService>();
+            builder.Services.AddScoped<IMarcaRepuestoRepository, MarcaRepuestoRepository>();
+            builder.Services.AddScoped<IMarcaRepuestoService, MarcaRepuestoService>();
+            builder.Services.AddScoped<IRepuestoRepository, RepuestoRepository>();
+            builder.Services.AddScoped<IRepuestoService, RepuestoService>();
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)

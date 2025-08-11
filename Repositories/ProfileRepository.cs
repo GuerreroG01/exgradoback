@@ -70,83 +70,83 @@ namespace ExGradoBack.Repositories
         }*/
 
         public async Task<InfoUser> CreateProfileAsync(InfoUser profile, IFormFile? photoFile)
-{
-    if (profile == null)
-    {
-        _logger.LogWarning("Se intentó crear un perfil con un objeto nulo.");
-        throw new ArgumentNullException(nameof(profile));
-    }
-
-    _logger.LogInformation("Iniciando creación de perfil para AuthId: {AuthId}", profile.AuthId);
-
-    var imagePath = _imagePath ?? throw new InvalidOperationException("La ruta de la imagen no está configurada.");
-    _logger.LogInformation("Ruta de imágenes: {ImagePath}", imagePath);
-
-    var authExists = await _context.Auth.AnyAsync(a => a.Id == profile.AuthId);
-    if (!authExists)
-    {
-        _logger.LogWarning("No existe un usuario con AuthId: {AuthId}", profile.AuthId);
-        throw new ArgumentException($"No existe un usuario con el AuthId {profile.AuthId}");
-    }
-
-    var profileExists = await _context.InfoUsers.AnyAsync(p => p.AuthId == profile.AuthId);
-    if (profileExists)
-    {
-        _logger.LogWarning("Ya existe un perfil para AuthId: {AuthId}", profile.AuthId);
-        throw new InvalidOperationException($"El usuario con AuthId {profile.AuthId} ya tiene un perfil.");
-    }
-
-    try
-    {
-        if (photoFile != null)
         {
-            var newFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
-            var filePath = Path.Combine(imagePath, newFileName);
-
-            _logger.LogInformation("Guardando foto del usuario en: {FilePath}", filePath);
-
-            await using var stream = new FileStream(filePath, FileMode.Create);
-            await photoFile.CopyToAsync(stream);
-
-            profile.FotoPerfil = newFileName;
-        }
-        else
-        {
-            var defaultImagePath = Path.Combine(imagePath, _defaultImageName);
-            if (!System.IO.File.Exists(defaultImagePath))
+            if (profile == null)
             {
-                _logger.LogError("No se encontró la imagen predeterminada en: {DefaultImagePath}", defaultImagePath);
-                throw new FileNotFoundException("No se encontró la imagen predeterminada.", defaultImagePath);
+                _logger.LogWarning("Se intentó crear un perfil con un objeto nulo.");
+                throw new ArgumentNullException(nameof(profile));
             }
 
-            var newFileName = Guid.NewGuid().ToString() + Path.GetExtension(defaultImagePath);
-            var newFilePath = Path.Combine(imagePath, newFileName);
+            _logger.LogInformation("Iniciando creación de perfil para AuthId: {AuthId}", profile.AuthId);
 
-            _logger.LogInformation("Usando imagen predeterminada para el perfil. Copiando a: {NewFilePath}", newFilePath);
-            System.IO.File.Copy(defaultImagePath, newFilePath);
+            var imagePath = _imagePath ?? throw new InvalidOperationException("La ruta de la imagen no está configurada.");
+            _logger.LogInformation("Ruta de imágenes: {ImagePath}", imagePath);
 
-            profile.FotoPerfil = newFileName;
+            var authExists = await _context.Auth.AnyAsync(a => a.Id == profile.AuthId);
+            if (!authExists)
+            {
+                _logger.LogWarning("No existe un usuario con AuthId: {AuthId}", profile.AuthId);
+                throw new ArgumentException($"No existe un usuario con el AuthId {profile.AuthId}");
+            }
+
+            var profileExists = await _context.InfoUsers.AnyAsync(p => p.AuthId == profile.AuthId);
+            if (profileExists)
+            {
+                _logger.LogWarning("Ya existe un perfil para AuthId: {AuthId}", profile.AuthId);
+                throw new InvalidOperationException($"El usuario con AuthId {profile.AuthId} ya tiene un perfil.");
+            }
+
+            try
+            {
+                if (photoFile != null)
+                {
+                    var newFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
+                    var filePath = Path.Combine(imagePath, newFileName);
+
+                    _logger.LogInformation("Guardando foto del usuario en: {FilePath}", filePath);
+
+                    await using var stream = new FileStream(filePath, FileMode.Create);
+                    await photoFile.CopyToAsync(stream);
+
+                    profile.FotoPerfil = newFileName;
+                }
+                else
+                {
+                    var defaultImagePath = Path.Combine(imagePath, _defaultImageName);
+                    if (!System.IO.File.Exists(defaultImagePath))
+                    {
+                        _logger.LogError("No se encontró la imagen predeterminada en: {DefaultImagePath}", defaultImagePath);
+                        throw new FileNotFoundException("No se encontró la imagen predeterminada.", defaultImagePath);
+                    }
+
+                    var newFileName = Guid.NewGuid().ToString() + Path.GetExtension(defaultImagePath);
+                    var newFilePath = Path.Combine(imagePath, newFileName);
+
+                    _logger.LogInformation("Usando imagen predeterminada para el perfil. Copiando a: {NewFilePath}", newFilePath);
+                    System.IO.File.Copy(defaultImagePath, newFilePath);
+
+                    profile.FotoPerfil = newFileName;
+                }
+
+                _context.InfoUsers.Add(profile);
+                _logger.LogInformation("Agregando perfil a la base de datos para AuthId: {AuthId}", profile.AuthId);
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Perfil creado exitosamente con ID: {Id}", profile.Id);
+                return profile;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Error al guardar el perfil en la base de datos para AuthId: {AuthId}", profile.AuthId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado al crear el perfil para AuthId: {AuthId}", profile.AuthId);
+                throw;
+            }
         }
-
-        _context.InfoUsers.Add(profile);
-        _logger.LogInformation("Agregando perfil a la base de datos para AuthId: {AuthId}", profile.AuthId);
-
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Perfil creado exitosamente con ID: {Id}", profile.Id);
-        return profile;
-    }
-    catch (DbUpdateException ex)
-    {
-        _logger.LogError(ex, "Error al guardar el perfil en la base de datos para AuthId: {AuthId}", profile.AuthId);
-        throw;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error inesperado al crear el perfil para AuthId: {AuthId}", profile.AuthId);
-        throw;
-    }
-}
 
         public async Task<InfoUser> UpdateProfileAsync(InfoUser profile, IFormFile? photoFile = null)
         {
