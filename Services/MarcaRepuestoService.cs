@@ -11,9 +11,8 @@ namespace ExGradoBack.Services
         {
             _marcaRepuestoRepository = marcaRepuestoRepository;
         }
-        public Task<MarcaRepuesto> GetMarcaRepuestoAsync(string nombre)
-            => _marcaRepuestoRepository.GetMarcaRepuestoAsync(nombre);
-
+        public Task<List<MarcaRepuesto>> GetMarcaRepuestoPorCalificacionAsync(double calificacion)
+            => _marcaRepuestoRepository.GetMarcaRepuestoPorCalificacionAsync(calificacion);
         public Task<MarcaRepuesto?> GetMarcaRepuestoByIdAsync(int id)
             => _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(id);
 
@@ -27,6 +26,12 @@ namespace ExGradoBack.Services
             {
                 throw new ArgumentException("Ya existe una marca con ese nombre.", nameof(marcaRepuesto.Nombre));
             }
+
+            if (!marcaRepuesto.Calificacion.HasValue)
+            {
+                marcaRepuesto.Calificacion = 0;
+            }
+
             return await _marcaRepuestoRepository.CreateMarcaRepuestoAsync(marcaRepuesto);
         }
         public async Task<MarcaRepuesto> UpdateMarcaRepuestoAsync(MarcaRepuesto marcaRepuesto)
@@ -35,11 +40,23 @@ namespace ExGradoBack.Services
             {
                 throw new ArgumentException("El nombre de la marca no puede ser nulo o vacío.", nameof(marcaRepuesto.Nombre));
             }
-            if (await MarcaRepuestoExistsAsync(marcaRepuesto.Nombre))
+
+            var marcaOriginal = await _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(marcaRepuesto.Id);
+
+            if (marcaOriginal == null)
+                throw new ArgumentException("Marca no encontrada.", nameof(marcaRepuesto.Id));
+
+            if (marcaOriginal.Nombre != marcaRepuesto.Nombre)
             {
-                throw new ArgumentException("Ya existe una marca con ese nombre.", nameof(marcaRepuesto.Nombre));
+                if (await MarcaRepuestoExistsAsync(marcaRepuesto.Nombre))
+                {
+                    throw new ArgumentException("Ya existe una marca con ese nombre.", nameof(marcaRepuesto.Nombre));
+                }
             }
-            return await _marcaRepuestoRepository.UpdateMarcaRepuestoAsync(marcaRepuesto);
+            marcaOriginal.Nombre = marcaRepuesto.Nombre;
+            marcaOriginal.Calificacion = marcaRepuesto.Calificacion;
+
+            return await _marcaRepuestoRepository.UpdateMarcaRepuestoAsync(marcaOriginal);
         }
 
         public Task<bool> DeleteMarcaRepuestoAsync(int id)

@@ -3,7 +3,7 @@ namespace ExGradoBack.Services
 {
     public interface IMarcaRepuestoService
     {
-        Task<MarcaRepuesto> GetMarcaRepuestoAsync(string nombre);
+        Task<List<MarcaRepuesto>> GetMarcaRepuestoPorCalificacionAsync(double calificacion);
         Task<MarcaRepuesto?> GetMarcaRepuestoByIdAsync(int id);
         Task<MarcaRepuesto> CreateMarcaRepuestoAsync(MarcaRepuesto marcaRepuesto);
         Task<MarcaRepuesto> UpdateMarcaRepuestoAsync(MarcaRepuesto marcaRepuesto);

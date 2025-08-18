@@ -11,15 +11,18 @@ namespace ExGradoBack.Repositories
         {
             _context = context;
         }
-        public async Task<MarcaRepuesto> GetMarcaRepuestoAsync(string nombre)
+        public async Task<List<MarcaRepuesto>> GetMarcaRepuestoPorCalificacionAsync(double calificacion)
         {
-            var marca = await _context.MarcaRepuesto
-                .FirstOrDefaultAsync(m => m.Nombre == nombre);
+            var marcas = await _context.MarcaRepuesto
+                .Where(m => m.Calificacion.HasValue && 
+                            m.Calificacion.Value >= calificacion && 
+                            m.Calificacion.Value < calificacion + 1)
+                .ToListAsync();
 
-            if (marca is null)
-                throw new InvalidOperationException($"No se encontró la marca de repuesto con nombre '{nombre}'.");
+            if (marcas == null || marcas.Count == 0)
+                throw new InvalidOperationException($"No se encontraron marcas de repuesto con calificación alrededor de '{calificacion}'.");
 
-            return marca;
+            return marcas;
         }
 
         public async Task<MarcaRepuesto?> GetMarcaRepuestoByIdAsync(int id)

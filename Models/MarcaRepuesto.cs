@@ -13,6 +13,7 @@ namespace ExGradoBack.Models
 
         [Required(ErrorMessage = "Se debe ingresar un nombre.")]
         public string Nombre { get; set; } = string.Empty;
-        public string? Detalle { get; set; }
+        [Range(0, 5, ErrorMessage = "La calificación debe estar entre 0 y 5.")]
+        public double? Calificacion { get; set; }
     }
 }

@@ -14,10 +14,17 @@ namespace ExGradoBack.Controllers
             _marcaRepuestoService = marcaRepuestoService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetByName(string nombre)
+        public async Task<IActionResult> GetByCalificacion(double calificacion)
         {
-            var marcarepuesto = await _marcaRepuestoService.GetMarcaRepuestoAsync(nombre);
-            return Ok(marcarepuesto);
+            try
+            {
+                var marcas = await _marcaRepuestoService.GetMarcaRepuestoPorCalificacionAsync(calificacion);
+                return Ok(marcas);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
