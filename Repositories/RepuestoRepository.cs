@@ -21,6 +21,12 @@ namespace ExGradoBack.Repositories
         {
             return await _context.Repuesto.FindAsync(id);
         }
+        public async Task<IEnumerable<Repuesto>> GetRepuestosByUbicacionAsync(string ubicacion)
+        {
+            return await _context.Repuesto
+                .Where(r => r.Ubicacion.Contains(ubicacion))
+                .ToListAsync();
+        }
 
         public async Task<Repuesto> CreateRepuestoAsync(Repuesto repuesto)
         {
@@ -49,6 +55,13 @@ namespace ExGradoBack.Repositories
         public async Task<bool> RepuestoExistsAsync(string nombre)
         {
             return await _context.Repuesto.AnyAsync(r => r.Nombre == nombre);
+        }
+        public async Task<IEnumerable<string>> GetAllUbicacionesAsync()
+        {
+            return await _context.Repuesto
+                                .Select(r => r.Ubicacion)
+                                .Distinct()
+                                .ToListAsync();
         }
     }
 }

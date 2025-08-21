@@ -27,6 +27,12 @@ namespace ExGradoBack.Controllers
             if (repuesto == null) return NotFound();
             return Ok(repuesto);
         }
+        [HttpGet("ubicacion/{ubicacion}")]
+        public async Task<IActionResult> GetByUbicacion(string ubicacion)
+        {
+            var repuestos = await _repuestoService.GetRepuestosByUbicacionAsync(ubicacion);
+            return Ok(repuestos);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Repuesto repuesto)
@@ -49,6 +55,12 @@ namespace ExGradoBack.Controllers
             var eliminado = await _repuestoService.DeleteRepuestoAsync(id);
             if (!eliminado) return NotFound();
             return NoContent();
+        }
+        [HttpGet("ubicaciones")]
+        public async Task<ActionResult<IEnumerable<string>>> GetUbicaciones()
+        {
+            var ubicaciones = await _repuestoService.GetAllUbicacionesAsync();
+            return Ok(ubicaciones);
         }
     }
 }

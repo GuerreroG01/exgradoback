@@ -25,13 +25,17 @@ namespace ExGradoBack.Services
         {
             return await _repuestoRepository.GetRepuestoByIdAsync(id);
         }
+        public async Task<IEnumerable<Repuesto>> GetRepuestosByUbicacionAsync(string ubicacion)
+        {
+            return await _repuestoRepository.GetRepuestosByUbicacionAsync(ubicacion);
+        }
 
         public async Task<Repuesto> CreateRepuestoAsync(Repuesto repuesto)
         {
             var context = new ValidationContext(repuesto);
             Validator.ValidateObject(repuesto, context, validateAllProperties: true);
             if (repuesto.VehiculoInfoId <= 0)
-                    throw new ValidationException("ID de vehículo inválido.");
+                throw new ValidationException("ID de vehículo inválido.");
             if (repuesto.MarcaRepuestoId <= 0)
                 throw new ValidationException("ID de marca de repuesto inválido.");
             var idVehiculo = repuesto.VehiculoInfoId;
@@ -54,7 +58,7 @@ namespace ExGradoBack.Services
             var context = new ValidationContext(repuesto);
             Validator.ValidateObject(repuesto, context, validateAllProperties: true);
             if (repuesto.VehiculoInfoId <= 0)
-                    throw new ValidationException("ID de vehículo inválido.");
+                throw new ValidationException("ID de vehículo inválido.");
             if (repuesto.MarcaRepuestoId <= 0)
                 throw new ValidationException("ID de marca de repuesto inválido.");
             var idVehiculo = repuesto.VehiculoInfoId;
@@ -80,6 +84,10 @@ namespace ExGradoBack.Services
         public async Task<bool> RepuestoExistsAsync(string nombre)
         {
             return await _repuestoRepository.RepuestoExistsAsync(nombre);
+        }
+        public async Task<IEnumerable<string>> GetAllUbicacionesAsync()
+        {
+            return await _repuestoRepository.GetAllUbicacionesAsync();
         }
     }
 }
