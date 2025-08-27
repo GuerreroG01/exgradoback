@@ -19,12 +19,19 @@ namespace ExGradoBack.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetByMarcaAndAnio([FromQuery] string? marca, [FromQuery] int? anio)
-        {
+        public async Task<IActionResult> GetByMarcaAndAnio( [FromQuery] string? marca, [FromQuery] int? anio, [FromQuery] bool isMinInfo = false) {
             try
             {
-                var vehiculos = await _vehiculoInfoService.GetVehiculoInfosByMarcaAndAnioAsync(marca, anio);
-                return Ok(vehiculos);
+                if (isMinInfo)
+                {
+                    var vehiculosMin = await _vehiculoInfoService.GetVehiculoInfosMinAsync(marca, anio);
+                    return Ok(vehiculosMin);
+                }
+                else
+                {
+                    var vehiculosFull = await _vehiculoInfoService.GetVehiculoInfosFullAsync(marca, anio);
+                    return Ok(vehiculosFull);
+                }
             }
             catch (InvalidOperationException ex)
             {

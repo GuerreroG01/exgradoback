@@ -13,6 +13,9 @@ namespace ExGradoBack.Services
         }
         public Task<List<MarcaRepuesto>> GetMarcaRepuestoPorCalificacionAsync(double calificacion)
             => _marcaRepuestoRepository.GetMarcaRepuestoPorCalificacionAsync(calificacion);
+            
+        public async Task<MarcaRepuesto?> GetByNameAsync(string nombre)
+            => await _marcaRepuestoRepository.GetByNameAsync(nombre);
         public Task<MarcaRepuesto?> GetMarcaRepuestoByIdAsync(int id)
             => _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(id);
 

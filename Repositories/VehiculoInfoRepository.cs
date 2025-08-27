@@ -1,7 +1,7 @@
 using ExGradoBack.Data;
 using ExGradoBack.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Repositories
 {
@@ -13,7 +13,8 @@ namespace ExGradoBack.Repositories
         {
             _context = context;
         }
-        public async Task<IEnumerable<VehiculoInfo>> GetVehiculoInfosByMarcaAndAnioAsync(string? marca, int? anio)
+
+        public async Task<IEnumerable<object>> GetVehiculoInfosByMarcaAndAnioAsync(string? marca, int? anio, bool isMinInfo = false)
         {
             var query = _context.VehiculoInfo.AsQueryable();
 
@@ -25,6 +26,19 @@ namespace ExGradoBack.Repositories
             if (anio.HasValue)
             {
                 query = query.Where(v => v.Anio == anio.Value);
+            }
+
+            if (isMinInfo)
+            {
+                return await query
+                    .Select(v => new VehiculoInfoMinDto
+                    {
+                        Id = v.Id,
+                        Marca = v.Marca,
+                        Modelo = v.Modelo,
+                        FotoReferencia = v.FotoReferencia
+                    })
+                    .ToListAsync();
             }
 
             return await query.ToListAsync();

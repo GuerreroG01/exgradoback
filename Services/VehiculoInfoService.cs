@@ -2,6 +2,7 @@ using ExGradoBack.Models;
 using ExGradoBack.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Services
 {
@@ -22,15 +23,27 @@ namespace ExGradoBack.Services
             }
         }
 
-        public async Task<IEnumerable<VehiculoInfo>> GetVehiculoInfosByMarcaAndAnioAsync(string? marca, int? anio)
+        public async Task<IEnumerable<VehiculoInfo>> GetVehiculoInfosFullAsync(string? marca, int? anio)
         {
-            var safeMarca = marca ?? string.Empty;
-            var resultado = await _vehiculoInfoRepository.GetVehiculoInfosByMarcaAndAnioAsync(safeMarca, anio);
+            var resultado = await _vehiculoInfoRepository.GetVehiculoInfosByMarcaAndAnioAsync(marca, anio, false);
             if (!resultado.Any())
             {
                 throw new InvalidOperationException("No se encontraron vehículos con los filtros proporcionados.");
             }
-            return resultado;
+
+            // Cast segura porque sabes que isMinInfo = false devuelve VehiculoInfo
+            return resultado.Cast<VehiculoInfo>();
+        }
+        public async Task<IEnumerable<VehiculoInfoMinDto>> GetVehiculoInfosMinAsync(string? marca, int? anio)
+        {
+            var resultado = await _vehiculoInfoRepository.GetVehiculoInfosByMarcaAndAnioAsync(marca, anio, true);
+            if (!resultado.Any())
+            {
+                throw new InvalidOperationException("No se encontraron vehículos con los filtros proporcionados.");
+            }
+
+            // Cast segura porque sabes que isMinInfo = true devuelve VehiculoInfoMinDto
+            return resultado.Cast<VehiculoInfoMinDto>();
         }
 
         public Task<VehiculoInfo?> GetVehiculoInfoByIdAsync(int id)

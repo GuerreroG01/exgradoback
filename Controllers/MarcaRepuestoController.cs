@@ -26,6 +26,17 @@ namespace ExGradoBack.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+        [HttpGet("byname")]
+        public async Task<IActionResult> GetByName([FromQuery] string nombre)
+        {
+            var marca = await _marcaRepuestoService.GetByNameAsync(nombre);
+            if (marca == null)
+            {
+                return NotFound($"No se encontró una marca con el nombre '{nombre}'.");
+            }
+
+            return Ok(marca);
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

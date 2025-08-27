@@ -24,6 +24,11 @@ namespace ExGradoBack.Repositories
 
             return marcas;
         }
+        public async Task<MarcaRepuesto?> GetByNameAsync(string nombre)
+        {
+            return await _context.MarcaRepuesto
+                .FirstOrDefaultAsync(m => m.Nombre.ToLower() == nombre.ToLower());
+        }
 
         public async Task<MarcaRepuesto?> GetMarcaRepuestoByIdAsync(int id)
         {
