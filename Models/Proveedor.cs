@@ -11,10 +11,15 @@ namespace ExGradoBack.Models
 
         [Required]
         [StringLength(100)]
-        public required string Nombre { get; set; }  // Nombre de empresa o persona
+        public required string Nombre { get; set; }
 
         [StringLength(20)]
-        public string? Documento { get; set; } // RUC o DNI (opcional)
+        //Número ruc o número de cédula jurídica fiscal. 
+        public string? Documento { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public required string NombreContacto { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -23,7 +28,17 @@ namespace ExGradoBack.Models
         [StringLength(100)]
         public string? Email { get; set; }
 
+        [StringLength(30)]
+        public string? Pais { get; set; }
+
+        [StringLength(30)]
+        public string? Ciudad { get; set; }
+
         [StringLength(200)]
         public string? Direccion { get; set; }
+
+        [StringLength(200)]
+        public string? Notas { get; set; }
+
     }
 }

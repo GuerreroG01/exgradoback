@@ -59,7 +59,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 8, 13, 15, 44, 42, 763, DateTimeKind.Local).AddTicks(3324),
+                            FechaRegistro = new DateTime(2025, 8, 28, 12, 53, 2, 800, DateTimeKind.Local).AddTicks(2902),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
@@ -313,6 +313,10 @@ namespace ExGradoBack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Ciudad")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
                     b.Property<string>("Direccion")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
@@ -329,6 +333,19 @@ namespace ExGradoBack.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
+
+                    b.Property<string>("NombreContacto")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Notas")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Pais")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Telefono")
                         .IsRequired()
@@ -417,7 +434,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 2,
-                            Nombre = "Usuario"
+                            Nombre = "Invitado"
                         });
                 });
 

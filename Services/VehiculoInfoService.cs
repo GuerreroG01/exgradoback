@@ -31,7 +31,6 @@ namespace ExGradoBack.Services
                 throw new InvalidOperationException("No se encontraron vehículos con los filtros proporcionados.");
             }
 
-            // Cast segura porque sabes que isMinInfo = false devuelve VehiculoInfo
             return resultado.Cast<VehiculoInfo>();
         }
         public async Task<IEnumerable<VehiculoInfoMinDto>> GetVehiculoInfosMinAsync(string? marca, int? anio)
@@ -42,7 +41,6 @@ namespace ExGradoBack.Services
                 throw new InvalidOperationException("No se encontraron vehículos con los filtros proporcionados.");
             }
 
-            // Cast segura porque sabes que isMinInfo = true devuelve VehiculoInfoMinDto
             return resultado.Cast<VehiculoInfoMinDto>();
         }
 

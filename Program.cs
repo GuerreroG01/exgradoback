@@ -40,23 +40,23 @@ namespace ExGradoBack
                 config.UseStorage(new MySqlStorage(connectionString, new MySqlStorageOptions())));
             builder.Services.AddHangfireServer();
 
-            /*builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowLocalNetwork",
-                    policy =>
-                    {
-                        policy.SetIsOriginAllowed(origin =>
-                        {
-                            return origin.StartsWith("http://192.168.") ||
-                                   origin.StartsWith("http://10.") ||
-                                   origin.StartsWith("http://172.") ||
-                                   origin.StartsWith("http://localhost");
-                        })
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                    });
-            });*/
             builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowLocalNetwork", policy =>
+                {
+                    policy.SetIsOriginAllowed(origin =>
+                    {
+                        return origin.StartsWith("http://192.168.") ||
+                            origin.StartsWith("http://10.") ||
+                            origin.StartsWith("http://172.") ||
+                            origin.StartsWith("http://localhost");
+                    })
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithExposedHeaders("Content-Disposition");
+                });
+            });
+            /*builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
                 {
@@ -66,7 +66,7 @@ namespace ExGradoBack
                         .AllowAnyMethod()
                         .WithExposedHeaders("Content-Disposition"); // <-- Para que el navegador lea la información del encabezado Content-Disposition en una respuesta
                 });
-            });
+            });*/
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IRolService, RolService>();
@@ -81,6 +81,8 @@ namespace ExGradoBack
             builder.Services.AddScoped<IMarcaRepuestoService, MarcaRepuestoService>();
             builder.Services.AddScoped<IRepuestoRepository, RepuestoRepository>();
             builder.Services.AddScoped<IRepuestoService, RepuestoService>();
+            builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
+            builder.Services.AddScoped<IProveedorService, ProveedorService>();
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
@@ -97,7 +99,7 @@ namespace ExGradoBack
             }
             
             app.UseHttpsRedirection();
-            app.UseCors("AllowAll");
+            app.UseCors("AllowLocalNetwork");
             app.UseAuthorization();
             app.UseHangfireDashboard();
             app.UseStaticFiles(); //Servir archivos estáticos en wwwroot

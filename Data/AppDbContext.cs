@@ -81,7 +81,7 @@ namespace ExGradoBack.Data
             //Datos Predeterminados
             modelBuilder.Entity<Rol>().HasData(
                 new Rol { Id = 1, Nombre = "Administrador" },
-                new Rol { Id = 2, Nombre = "Usuario" }
+                new Rol { Id = 2, Nombre = "Invitado" }
             );
             modelBuilder.Entity<Auth>().HasData(
             new Auth
