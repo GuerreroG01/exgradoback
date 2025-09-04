@@ -40,12 +40,26 @@ namespace ExGradoBack.Services
         public async Task<Proveedor> UpdateProveedorAsync(Proveedor proveedor)
         {
             ValidateProveedor(proveedor);
+
             var existingProveedor = await _proveedorRepository.GetProveedorByIdAsync(proveedor.Id);
             if (existingProveedor == null)
             {
-                throw new KeyNotFoundException($"Proveedor with ID {proveedor.Id} not found.");
+                throw new KeyNotFoundException($"Proveedor con ID {proveedor.Id} no encontrado.");
             }
-            return await _proveedorRepository.UpdateProveedorAsync(proveedor);
+
+            existingProveedor.Nombre = proveedor.Nombre;
+            existingProveedor.Documento = proveedor.Documento;
+            existingProveedor.NombreContacto = proveedor.NombreContacto;
+            existingProveedor.Telefono = proveedor.Telefono;
+            existingProveedor.Email = proveedor.Email;
+            existingProveedor.Pais = proveedor.Pais;
+            existingProveedor.Ciudad = proveedor.Ciudad;
+            existingProveedor.Direccion = proveedor.Direccion;
+            existingProveedor.Notas = proveedor.Notas;
+
+            await _proveedorRepository.SaveChangesAsync();
+
+            return existingProveedor;
         }
         public async Task<bool> DeleteProveedorAsync(int id)
         {

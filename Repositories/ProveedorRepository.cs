@@ -53,13 +53,6 @@ namespace ExGradoBack.Repositories
             await _context.SaveChangesAsync();
             return proveedor;
         }
-
-        public async Task<Proveedor> UpdateProveedorAsync(Proveedor proveedor)
-        {
-            _context.Proveedor.Update(proveedor);
-            await _context.SaveChangesAsync();
-            return proveedor;
-        }
         public async Task<bool> DeleteProveedorAsync(int id)
         {
             var proveedor = await _context.Proveedor.FindAsync(id);
@@ -76,6 +69,10 @@ namespace ExGradoBack.Repositories
         public async Task<bool> ProveedorExistsAsync(string nombre)
         {
             return await _context.Proveedor.AnyAsync(p => p.Nombre == nombre);
+        }
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<string>> GetCountryProvAsync()
         {
