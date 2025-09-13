@@ -66,7 +66,7 @@ namespace ExGradoBack.Services
             var existingProveedor = await _proveedorRepository.GetProveedorByIdAsync(id);
             if (existingProveedor == null)
             {
-                throw new KeyNotFoundException($"Proveedor with ID {id} not found.");
+                throw new KeyNotFoundException($"Proveedor con ID {id} no encontrado.");
             }
             return await _proveedorRepository.DeleteProveedorAsync(id);
         }

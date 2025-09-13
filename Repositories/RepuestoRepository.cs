@@ -52,9 +52,9 @@ namespace ExGradoBack.Repositories
             return true;
         }
 
-        public async Task<bool> RepuestoExistsAsync(string nombre)
+        public async Task<bool> RepuestoExistsAsync(int id)
         {
-            return await _context.Repuesto.AnyAsync(r => r.Nombre == nombre);
+            return await _context.Repuesto.AnyAsync(r => r.Id == id);
         }
         public async Task<IEnumerable<string>> GetAllUbicacionesAsync()
         {

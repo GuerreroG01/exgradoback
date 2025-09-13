@@ -11,12 +11,12 @@ namespace ExGradoBack.Models
 
         [Required]
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
+        [StringLength(100)]
+        public string? NombresCliente { get; set; }
+        public required string TipoCliente { get; set; }
+        public required int Descuento { get; set; }
 
-        [Required]
-        public int ClienteId { get; set; }
-
-        [ForeignKey("ClienteId")]
-        public virtual Cliente Cliente { get; set; } = null!;
+        public required string Vendedor { get; set; }
 
         [Required]
         public decimal Total { get; set; }

@@ -81,9 +81,9 @@ namespace ExGradoBack.Services
             return await _repuestoRepository.DeleteRepuestoAsync(id);
         }
 
-        public async Task<bool> RepuestoExistsAsync(string nombre)
+        public async Task<bool> RepuestoExistsAsync(int id)
         {
-            return await _repuestoRepository.RepuestoExistsAsync(nombre);
+            return await _repuestoRepository.RepuestoExistsAsync(id);
         }
         public async Task<IEnumerable<string>> GetAllUbicacionesAsync()
         {

@@ -18,7 +18,6 @@ namespace ExGradoBack.Data
         public DbSet<VehiculoInfo> VehiculoInfo { get; set; }
         public DbSet<MarcaRepuesto> MarcaRepuesto { get; set; }
         public DbSet<Repuesto> Repuesto { get; set; }
-        public DbSet<Cliente> Cliente { get; set; }
         public DbSet<Proveedor> Proveedor { get; set; }
 
         public DbSet<Factura> Factura { get; set; }
@@ -44,12 +43,6 @@ namespace ExGradoBack.Data
                 .HasOne(r => r.MarcaRepuesto)
                 .WithMany()
                 .HasForeignKey(r => r.MarcaRepuestoId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Factura>()
-                .HasOne(f => f.Cliente)
-                .WithMany()
-                .HasForeignKey(f => f.ClienteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<DetalleFactura>()
@@ -91,7 +84,16 @@ namespace ExGradoBack.Data
                 Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                 FechaRegistro = DateTime.Now,
                 RolId = 1
+            },
+            new Auth
+            {
+                Id = 2,
+                Username = "Invitado",
+                Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
+                FechaRegistro = DateTime.Now,
+                RolId = 2
             }
+
         );
             //Indices
             modelBuilder.Entity<Auth>()

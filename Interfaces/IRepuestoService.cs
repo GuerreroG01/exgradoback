@@ -9,7 +9,7 @@ namespace ExGradoBack.Services
         Task<Repuesto> CreateRepuestoAsync(Repuesto repuesto);
         Task<Repuesto> UpdateRepuestoAsync(Repuesto repuesto);
         Task<bool> DeleteRepuestoAsync(int id);
-        Task<bool> RepuestoExistsAsync(string nombre);
+        Task<bool> RepuestoExistsAsync(int id);
         Task<IEnumerable<string>> GetAllUbicacionesAsync();
     }
 }

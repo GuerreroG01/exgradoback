@@ -83,6 +83,10 @@ namespace ExGradoBack
             builder.Services.AddScoped<IRepuestoService, RepuestoService>();
             builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
             builder.Services.AddScoped<IProveedorService, ProveedorService>();
+            builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
+            builder.Services.AddScoped<IFacturaService, FacturaService>();
+            builder.Services.AddScoped<IDetalleFacturaRepository, DetalleFacturaRepository>();
+            builder.Services.AddScoped<IDetalleFacturaService, DetalleFacturaService>();
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)

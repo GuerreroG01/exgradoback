@@ -30,5 +30,6 @@ namespace ExGradoBack.Models
 
         [JsonIgnore]
         public InfoUser? InfoUser { get; set; }
+
     }
 }

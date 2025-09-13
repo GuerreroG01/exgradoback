@@ -59,10 +59,18 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 8, 28, 12, 53, 2, 800, DateTimeKind.Local).AddTicks(2902),
+                            FechaRegistro = new DateTime(2025, 9, 12, 11, 21, 56, 22, DateTimeKind.Local).AddTicks(8293),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            FechaRegistro = new DateTime(2025, 9, 12, 11, 21, 56, 22, DateTimeKind.Local).AddTicks(8297),
+                            Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
+                            RolId = 2,
+                            Username = "Invitado"
                         });
                 });
 
@@ -94,33 +102,6 @@ namespace ExGradoBack.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Backup");
-                });
-
-            modelBuilder.Entity("ExGradoBack.Models.Cliente", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Nombres")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("Telefono")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("TipoCliente")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Cliente");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.DetalleFactura", b =>
@@ -195,18 +176,28 @@ namespace ExGradoBack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ClienteId")
+                    b.Property<int>("Descuento")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("NombresCliente")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("TipoCliente")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(65,30)");
 
-                    b.HasKey("Id");
+                    b.Property<string>("Vendedor")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.HasIndex("ClienteId");
+                    b.HasKey("Id");
 
                     b.ToTable("Factura");
                 });
@@ -525,17 +516,6 @@ namespace ExGradoBack.Migrations
                     b.Navigation("OrdenCompra");
 
                     b.Navigation("Repuesto");
-                });
-
-            modelBuilder.Entity("ExGradoBack.Models.Factura", b =>
-                {
-                    b.HasOne("ExGradoBack.Models.Cliente", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.InfoUser", b =>

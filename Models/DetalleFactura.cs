@@ -13,13 +13,13 @@ namespace ExGradoBack.Models
         public int FacturaId { get; set; }
 
         [ForeignKey("FacturaId")]
-        public virtual Factura Factura { get; set; } = null!;
+        public virtual Factura? Factura { get; set; } = null!;
 
         [Required]
         public int RepuestoId { get; set; }
 
         [ForeignKey("RepuestoId")]
-        public virtual Repuesto Repuesto { get; set; } = null!;
+        public virtual Repuesto? Repuesto { get; set; } = null!;
 
         [Required]
         public int Cantidad { get; set; }
