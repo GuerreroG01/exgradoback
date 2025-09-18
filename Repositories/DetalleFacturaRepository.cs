@@ -44,5 +44,30 @@ namespace ExGradoBack.Repositories
         {
             return await _context.DetalleFactura.AnyAsync(d => d.Id == id);
         }
+        public async Task<List<(int RepuestoId, string Nombre, int TotalVendidos)>> ObtenerTop10RepuestosAsync()
+        {
+            var result = await _context.DetalleFactura
+                .GroupBy(d => d.RepuestoId)
+                .Select(g => new
+                {
+                    RepuestoId = g.Key,
+                    TotalVendidos = g.Sum(d => d.Cantidad)
+                })
+                .OrderByDescending(x => x.TotalVendidos)
+                .Take(10)
+                .Join(
+                    _context.Repuesto,
+                    detalle => detalle.RepuestoId,
+                    repuesto => repuesto.Id,
+                    (detalle, repuesto) => new
+                    {
+                        repuesto.Id,
+                        repuesto.Nombre,
+                        detalle.TotalVendidos
+                    }
+                )
+                .ToListAsync();
+            return result.Select(r => (r.Id, r.Nombre, r.TotalVendidos)).ToList();
+        }
     }
 }

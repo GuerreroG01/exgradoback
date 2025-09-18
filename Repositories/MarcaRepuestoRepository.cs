@@ -1,5 +1,6 @@
 using ExGradoBack.Data;
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 using Microsoft.EntityFrameworkCore;
 namespace ExGradoBack.Repositories
 {
@@ -14,8 +15,8 @@ namespace ExGradoBack.Repositories
         public async Task<List<MarcaRepuesto>> GetMarcaRepuestoPorCalificacionAsync(double calificacion)
         {
             var marcas = await _context.MarcaRepuesto
-                .Where(m => m.Calificacion.HasValue && 
-                            m.Calificacion.Value >= calificacion && 
+                .Where(m => m.Calificacion.HasValue &&
+                            m.Calificacion.Value >= calificacion &&
                             m.Calificacion.Value < calificacion + 1)
                 .ToListAsync();
 
@@ -62,6 +63,25 @@ namespace ExGradoBack.Repositories
         public async Task<bool> MarcaRepuestoExistsAsync(string nombre)
         {
             return await _context.MarcaRepuesto.AnyAsync(m => m.Nombre == nombre);
+        }
+        
+        public async Task<List<MarcaRepuestoUsadaDto>> ObtenerMarcasRepuestoMasUsadasAsync()
+        {
+            var resultado = await _context.DetalleFactura
+                .Include(df => df.Repuesto)
+                    .ThenInclude(r => r != null ? r.MarcaRepuesto : null)
+                .GroupBy(df => new { df.Repuesto!.MarcaRepuestoId, df.Repuesto.MarcaRepuesto!.Nombre })
+                .Select(g => new MarcaRepuestoUsadaDto
+                {
+                    MarcaRepuestoId = g.Key.MarcaRepuestoId,
+                    NombreMarca = g.Key.Nombre,
+                    TotalVendidos = g.Sum(df => df.Cantidad)
+                })
+                .OrderByDescending(m => m.TotalVendidos)
+                .Take(5)
+                .ToListAsync();
+
+            return resultado;
         }
     }
 }

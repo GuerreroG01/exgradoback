@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Repositories
 {
@@ -13,5 +14,10 @@ namespace ExGradoBack.Repositories
         Task<Factura> UpdateFacturaAsync(Factura factura);
         Task<bool> DeleteFacturaAsync(int id);
         Task<bool> FacturaExistsAsync(int id);
+        Task<List<(string Vendedor, int TotalVendidos)>> ObtenerTop3VendedoresAsync();
+        Task<List<(int Mes, decimal TotalVentas)>> ObtenerTotalVentasPorMesAsync(int anio);
+        Task<List<FacturasPorBloqueDto>> ObtenerFacturasPorBloqueAsync();
+        Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadFacturasPorDiaUltimaSemanaAsync();
+        Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadRepuestosVendidosPorDiaUltimaSemanaAsync();
     }
 }

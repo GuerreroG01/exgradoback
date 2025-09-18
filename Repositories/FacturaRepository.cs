@@ -1,5 +1,6 @@
 using ExGradoBack.Data;
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExGradoBack.Repositories
@@ -74,6 +75,111 @@ namespace ExGradoBack.Repositories
         public async Task<bool> FacturaExistsAsync(int id)
         {
             return await _context.Factura.AnyAsync(c => c.Id == id);
+        }
+        public async Task<List<(string Vendedor, int TotalVendidos)>> ObtenerTop3VendedoresAsync()
+        {
+            var result = await _context.Factura
+                .SelectMany(f => f.Detalles, (factura, detalle) => new { factura.Vendedor, detalle.Cantidad })
+                .GroupBy(x => x.Vendedor)
+                .Select(g => new
+                {
+                    Vendedor = g.Key,
+                    TotalVendidos = g.Sum(x => x.Cantidad)
+                })
+                .OrderByDescending(x => x.TotalVendidos)
+                .Take(3)
+                .ToListAsync();
+
+            return result.Select(r => (r.Vendedor, r.TotalVendidos)).ToList();
+        }
+        public async Task<List<(int Mes, decimal TotalVentas)>> ObtenerTotalVentasPorMesAsync(int anio)
+        {
+            var consulta = await _context.Factura
+                .Where(f => f.Fecha.Year == anio)
+                .GroupBy(f => f.Fecha.Month)
+                .Select(g => new
+                {
+                    Mes = g.Key,
+                    TotalVentas = g.Sum(f => f.Total)
+                })
+                .OrderBy(r => r.Mes)
+                .ToListAsync();
+            var resultado = consulta
+                .Select(r => (r.Mes, TotalVentas: Math.Round(r.TotalVentas, 2)))
+                .ToList();
+
+            return resultado;
+        }
+        public async Task<List<FacturasPorBloqueDto>> ObtenerFacturasPorBloqueAsync()
+        {
+            var resultado = await _context.Factura
+                .GroupBy(f => f.Fecha.Hour / 2)
+                .Select(g => new FacturasPorBloqueDto
+                {
+                    Bloque = g.Key,
+                    Cantidad = g.Count()
+                })
+                .OrderBy(f => f.Bloque)
+                .ToListAsync();
+
+            return resultado;
+        }
+        private (DateTime fechaInicioUtc, DateTime mananaUtc) ObtenerRangoUltimaSemanaUtc()
+        {
+            var zonaManagua = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+            var ahoraManagua = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zonaManagua);
+
+            var hoyManagua = ahoraManagua.Date;
+            var fechaInicioManagua = hoyManagua.AddDays(-6);
+
+            var fechaInicioUtc = TimeZoneInfo.ConvertTimeToUtc(fechaInicioManagua, zonaManagua);
+            var mananaUtc = TimeZoneInfo.ConvertTimeToUtc(hoyManagua.AddDays(1), zonaManagua);
+
+            return (fechaInicioUtc, mananaUtc);
+        }
+        public async Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadFacturasPorDiaUltimaSemanaAsync()
+        {
+            var (fechaInitUTC, tomorrowUTC) = ObtenerRangoUltimaSemanaUtc();
+
+            var facturasPorDiaUtc = await _context.Factura
+                .Where(f => f.Fecha >= fechaInitUTC && f.Fecha < tomorrowUTC)
+                .GroupBy(f => f.Fecha.Date)
+                .Select(g => new { Dia = g.Key, Cantidad = g.Count() })
+                .ToDictionaryAsync(
+                    g => g.Dia,
+                    g => new DatosPorDiaDto
+                    {
+                        DiaMes = g.Dia.Day,
+                        DiaSemana = g.Dia.DayOfWeek.ToString(),
+                        Cantidad = g.Cantidad
+                    }
+                );
+
+            return facturasPorDiaUtc;
+        }
+        public async Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadRepuestosVendidosPorDiaUltimaSemanaAsync()
+        {
+            var (fechaInitUTC, tomorrowUTC) = ObtenerRangoUltimaSemanaUtc();
+
+            var detallePorDia = await _context.DetalleFactura
+                .Where(d => d.Factura != null && d.Factura.Fecha >= fechaInitUTC && d.Factura.Fecha < tomorrowUTC)
+                .GroupBy(d => d.Factura!.Fecha.Date)
+                .Select(g => new
+                {
+                    Dia = g.Key,
+                    CantidadTotal = g.Sum(x => x.Cantidad)
+                })
+                .ToDictionaryAsync(
+                    x => x.Dia,
+                    x => new DatosPorDiaDto
+                    {
+                        DiaMes = x.Dia.Day,
+                        DiaSemana = x.Dia.DayOfWeek.ToString(),
+                        Cantidad = x.CantidadTotal
+                    }
+                );
+
+            return detallePorDia;
         }
     }
 }

@@ -60,5 +60,9 @@ namespace ExGradoBack.Services
         {
             return await _detalleFacturaRepository.DetalleFacturaExistsAsync(id);
         }
+        public async Task<List<(int RepuestoId, string Nombre, int TotalVendidos)>> ObtenerTop10RepuestosAsync()
+        {
+            return await _detalleFacturaRepository.ObtenerTop10RepuestosAsync();
+        }
     }
 }

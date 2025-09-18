@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Services
 {
     public interface IMarcaRepuestoService
@@ -10,5 +11,6 @@ namespace ExGradoBack.Services
         Task<MarcaRepuesto> UpdateMarcaRepuestoAsync(MarcaRepuesto marcaRepuesto);
         Task<bool> DeleteMarcaRepuestoAsync(int id);
         Task<bool> MarcaRepuestoExistsAsync(string nombre);
+        Task<List<MarcaRepuestoUsadaDto>> ObtenerMarcasRepuestoMasUsadasAsync();
     }
 }

@@ -83,5 +83,11 @@ namespace ExGradoBack.Controllers
                 return BadRequest(new { mensaje = ex.Message });
             }
         }
+        [HttpGet("repuesto_mas_vendidos")]
+        public async Task<IActionResult> RepuestosMasVendidos()
+        {
+            var topRepuestos = await _detalleFacturaService.ObtenerTop10RepuestosAsync();
+            return Ok(topRepuestos.Select(t => new { t.RepuestoId, t.Nombre, t.TotalVendidos }));
+        }
     }
 }

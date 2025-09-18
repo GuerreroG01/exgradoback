@@ -1,5 +1,6 @@
 using ExGradoBack.Models;
 using ExGradoBack.Repositories;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Services
 {
@@ -13,7 +14,7 @@ namespace ExGradoBack.Services
         }
         public Task<List<MarcaRepuesto>> GetMarcaRepuestoPorCalificacionAsync(double calificacion)
             => _marcaRepuestoRepository.GetMarcaRepuestoPorCalificacionAsync(calificacion);
-            
+
         public async Task<MarcaRepuesto?> GetByNameAsync(string nombre)
             => await _marcaRepuestoRepository.GetByNameAsync(nombre);
         public Task<MarcaRepuesto?> GetMarcaRepuestoByIdAsync(int id)
@@ -65,7 +66,10 @@ namespace ExGradoBack.Services
         public Task<bool> DeleteMarcaRepuestoAsync(int id)
             => _marcaRepuestoRepository.DeleteMarcaRepuestoAsync(id);
 
-        public Task<bool> MarcaRepuestoExistsAsync(string nombre) 
+        public Task<bool> MarcaRepuestoExistsAsync(string nombre)
             => _marcaRepuestoRepository.MarcaRepuestoExistsAsync(nombre);
+            
+        public Task<List<MarcaRepuestoUsadaDto>> ObtenerMarcasRepuestoMasUsadasAsync()
+            => _marcaRepuestoRepository.ObtenerMarcasRepuestoMasUsadasAsync();
     }
 }

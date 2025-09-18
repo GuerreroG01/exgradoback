@@ -1,5 +1,6 @@
 using ExGradoBack.Models;
 using ExGradoBack.Repositories;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Services
 {
@@ -118,5 +119,28 @@ namespace ExGradoBack.Services
         {
             return await _facturaRepository.FacturaExistsAsync(id);
         }
+        public async Task<List<(string Vendedor, int TotalVendidos)>> ObtenerTop3VendedoresAsync()
+        {
+            return await _facturaRepository.ObtenerTop3VendedoresAsync();
+        }
+        public async Task<List<(int Mes, decimal TotalVentas)>> ObtenerTotalVentasPorMesAsync(int anio)
+        {
+            if (anio < 1)
+                throw new ArgumentException("El año ingresado no es válido.");
+
+            var ventas = await _facturaRepository.ObtenerTotalVentasPorMesAsync(anio);
+
+            if (ventas == null || !ventas.Any())
+                throw new InvalidOperationException($"No se encontraron ventas registradas para el año {anio}.");
+
+            return ventas;
+        }
+        public async Task<List<FacturasPorBloqueDto>> ObtenerFacturasPorBloqueAsync()
+            => await _facturaRepository.ObtenerFacturasPorBloqueAsync();
+        public async Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadFacturasPorDiaUltimaSemanaAsync()
+            => await _facturaRepository.GetCantidadFacturasPorDiaUltimaSemanaAsync();
+
+        public async Task<Dictionary<DateTime, DatosPorDiaDto>> GetRepuestosVendidosPorDiaUltimaSemanaAsync()
+            => await _facturaRepository.GetCantidadRepuestosVendidosPorDiaUltimaSemanaAsync();
     }
 }

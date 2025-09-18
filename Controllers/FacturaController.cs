@@ -151,5 +151,45 @@ namespace ExGradoBack.Controllers
                 return BadRequest(new { mensaje = ex.Message });
             }
         }
+        [HttpGet("mejores-vendedores")]
+        public async Task<IActionResult> ObtenerTop3Vendedores()
+        {
+            var topVendedores = await _facturaService.ObtenerTop3VendedoresAsync();
+            return Ok(topVendedores.Select(v => new { v.Vendedor, v.TotalVendidos }));
+        }
+        [HttpGet("ventas-por-mes")]
+        public async Task<IActionResult> ObtenerTotalVentasPorMes([FromQuery] int year)
+        {
+            if (year < 1)
+                return BadRequest("Año inválido.");
+
+            var resultados = await _facturaService.ObtenerTotalVentasPorMesAsync(year);
+
+            var response = resultados.Select(r => new
+            {
+                Mes = r.Mes,
+                TotalVentas = r.TotalVentas
+            });
+
+            return Ok(response);
+        }
+        [HttpGet("Actividad_Compras")]
+        public async Task<IActionResult> ObtenerFacturasPorBloqueAsync()
+        {
+            var resultado = await _facturaService.ObtenerFacturasPorBloqueAsync();
+            return Ok(resultado);
+        }
+        [HttpGet("Facturas_ultimaSemana")]
+        public async Task<IActionResult> GetFacturasPorDiaUltimaSemana()
+        {
+            var result = await _facturaService.GetCantidadFacturasPorDiaUltimaSemanaAsync();
+            return Ok(result);
+        }
+        [HttpGet("Repuestos_ultimaSemana")]
+        public async Task<IActionResult> GetRepuestosPorDiaUltimaSemana()
+        {
+            var result = await _facturaService.GetRepuestosVendidosPorDiaUltimaSemanaAsync();
+            return Ok(result);
+        }
     }
 }

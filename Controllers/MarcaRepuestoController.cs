@@ -68,5 +68,11 @@ namespace ExGradoBack.Controllers
             if (!eliminado) return NotFound();
             return NoContent();
         }
+        [HttpGet("mejores_marcas")]
+        public async Task<IActionResult> ObtenerMarcasRepuestoMasUsadas()
+        {
+            var masVendidas = await _marcaRepuestoService.ObtenerMarcasRepuestoMasUsadasAsync();
+            return Ok(masVendidas);
+        }
     }
 }
