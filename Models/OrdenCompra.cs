@@ -20,6 +20,7 @@ namespace ExGradoBack.Models
 
         [Required]
         public decimal Total { get; set; }
+        public required string Estado { get; set; }
 
         public virtual ICollection<DetalleOrdenCompra> Detalles { get; set; } = new List<DetalleOrdenCompra>();
     }
