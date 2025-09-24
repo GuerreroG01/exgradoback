@@ -82,6 +82,10 @@ namespace ExGradoBack.Services
         {
             return await _proveedorRepository.GetCityProvAsync(country);
         }
+        public async Task<IEnumerable<ProveedorMinInfo>> AutocompletarProveedoresAsync(string nombre)
+        {
+            return await _proveedorRepository.BuscarProveedoresPorNombreAsync(nombre);
+        }
 
         private void ValidateProveedor(Proveedor proveedor)
         {

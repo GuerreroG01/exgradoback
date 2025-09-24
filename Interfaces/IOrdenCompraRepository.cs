@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Repositories
 {
     public interface IOrdenCompraRepository
@@ -9,8 +10,10 @@ namespace ExGradoBack.Repositories
         Task<IEnumerable<OrdenCompra>> GetOrdenesPorDiaAsync(int anio, int mes, int dia);
         Task<OrdenCompra?> GetOrdenByIdAsync(int id);
         Task<OrdenCompra> CreateOrdenAsync(OrdenCompra orden);
-        Task<OrdenCompra> UpdateOrdenAsync(OrdenCompra orden);
+        Task SaveChangesAsync();
         Task<bool> DeleteOrdenAsync(int id);
         Task<bool> OrdenExistsAsync(int id);
+        Task<List<OrdenCompra>> GetOrdenesPendientesAsync();
+        Task<OrdenCompraResumenDTO?> GetResumenOrdenesPorFechaAsync(DateTime fecha);
     }
 }

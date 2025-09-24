@@ -90,5 +90,21 @@ namespace ExGradoBack.Repositories
                 .Distinct()
                 .ToListAsync();
         }
+        public async Task<IEnumerable<ProveedorMinInfo>> BuscarProveedoresPorNombreAsync(string termino, int limite = 10)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+                return new List<ProveedorMinInfo>();
+
+            return await _context.Proveedor
+                .Where(p => EF.Functions.Like(p.Nombre.ToLower(), $"%{termino.ToLower()}%"))
+                .OrderBy(p => p.Nombre)
+                .Select(p => new ProveedorMinInfo
+                {
+                    Id = p.Id,
+                    Nombre = p.Nombre
+                })
+                .Take(limite)
+                .ToListAsync();
+        }
     }
 }

@@ -59,7 +59,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 9, 12, 11, 21, 56, 22, DateTimeKind.Local).AddTicks(8293),
+                            FechaRegistro = new DateTime(2025, 9, 22, 10, 5, 2, 778, DateTimeKind.Local).AddTicks(3022),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
@@ -67,7 +67,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 2,
-                            FechaRegistro = new DateTime(2025, 9, 12, 11, 21, 56, 22, DateTimeKind.Local).AddTicks(8297),
+                            FechaRegistro = new DateTime(2025, 9, 22, 10, 5, 2, 778, DateTimeKind.Local).AddTicks(3026),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 2,
                             Username = "Invitado"
@@ -119,13 +119,13 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("PrecioUnitario")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("RepuestoId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -151,13 +151,13 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("PrecioUnitario")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("RepuestoId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -191,7 +191,7 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<decimal>("Total")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Vendedor")
                         .IsRequired()
@@ -280,14 +280,22 @@ namespace ExGradoBack.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("ProveedorId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Solicitante")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<decimal>("Total")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

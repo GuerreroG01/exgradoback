@@ -26,6 +26,12 @@ namespace ExGradoBack
             var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "undefined";
             var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "undefined";
             var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "undefined";
+
+            var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
+            var smtpPort = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "25");
+            var smtpFrom = Environment.GetEnvironmentVariable("SMTP_FROM");
+            var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
+            var smtpPass = Environment.GetEnvironmentVariable("SMTP_PASS");
             
             var connectionString = $"Server={dbHost};Database={dbName};User Id={dbUser};Password={dbPassword};Allow User Variables=true;";
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -91,12 +97,26 @@ namespace ExGradoBack
             builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
             builder.Services.AddScoped<IDetalleOrdenRepository, DetalleOrdenRepository>();
             builder.Services.AddScoped<IDetalleOrdenService, DetalleOrdenService>();
+            builder.Services.AddScoped<IDetalleOrdenService, DetalleOrdenService>();
+            builder.Services.AddScoped<IEmailService>(sp =>
+            new EmailService(
+                Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com",
+                int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587"),
+                Environment.GetEnvironmentVariable("SMTP_FROM") ?? "undefined",
+                Environment.GetEnvironmentVariable("SMTP_USER") ?? "undefined",
+                Environment.GetEnvironmentVariable("SMTP_PASS") ?? "",
+                sp.GetRequiredService<ILogger<EmailService>>(),
+                sp.GetRequiredService<IRepuestoService>()
+            ));
 
             Log.Logger = new LoggerConfiguration()
+                //.MinimumLevel.Debug()
+                //.Enrich.FromLogContext()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             builder.Logging.AddSerilog();
+            //builder.Logging.ClearProviders();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())

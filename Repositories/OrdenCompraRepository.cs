@@ -1,6 +1,7 @@
 using ExGradoBack.Data;
 using ExGradoBack.Models;
 using Microsoft.EntityFrameworkCore;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Repositories
 {
     public class OrdenCompraRepository : IOrdenCompraRepository
@@ -54,11 +55,9 @@ namespace ExGradoBack.Repositories
             await _context.SaveChangesAsync();
             return orden;
         }
-        public async Task<OrdenCompra> UpdateOrdenAsync(OrdenCompra orden)
+        public async Task SaveChangesAsync()
         {
-            _context.OrdenCompra.Update(orden);
             await _context.SaveChangesAsync();
-            return orden;
         }
         public async Task<bool> DeleteOrdenAsync(int id)
         {
@@ -73,6 +72,30 @@ namespace ExGradoBack.Repositories
         public async Task<bool> OrdenExistsAsync(int id)
         {
             return await _context.OrdenCompra.AnyAsync(o => o.Id == id);
+        }
+        public async Task<List<OrdenCompra>> GetOrdenesPendientesAsync()
+        {
+            return await _context.OrdenCompra
+                                .Include(o => o.Proveedor)
+                                .Where(o => o.Estado == "Pendiente")
+                                .ToListAsync();
+        }
+        public async Task<OrdenCompraResumenDTO?> GetResumenOrdenesPorFechaAsync(DateTime fecha)
+        {
+            var fechaDate = fecha.Date;
+
+            var resumen = await _context.OrdenCompra
+                .Where(o => o.Fecha.Date == fechaDate)
+                .GroupBy(o => o.Fecha.Date)
+                .Select(g => new OrdenCompraResumenDTO
+                {
+                    Fecha = g.Key,
+                    Pendientes = g.Count(o => o.Estado == "Pendiente"),
+                    Enviados = g.Count(o => o.Estado == "Enviado")
+                })
+                .FirstOrDefaultAsync();
+
+            return resumen;
         }
     }
 }

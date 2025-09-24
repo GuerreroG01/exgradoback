@@ -16,12 +16,14 @@ namespace ExGradoBack.Models
         public int ProveedorId { get; set; }
 
         [ForeignKey("ProveedorId")]
-        public virtual Proveedor Proveedor { get; set; } = null!;
+        public virtual Proveedor? Proveedor { get; set; } = null!;
 
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
         public required string Estado { get; set; }
+        public required string Solicitante { get; set; }
 
-        public virtual ICollection<DetalleOrdenCompra> Detalles { get; set; } = new List<DetalleOrdenCompra>();
+        public virtual ICollection<DetalleOrdenCompra>? Detalles { get; set; } = new List<DetalleOrdenCompra>();
     }
 }

@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Services
 {
     public interface IOrdenCompraService
@@ -12,5 +13,7 @@ namespace ExGradoBack.Services
         Task<OrdenCompra> UpdateOrdenAsync(OrdenCompra orden);
         Task<bool> DeleteOrdenAsync(int id);
         Task<bool> OrdenExistsAsync(int id);
+        Task<List<OrdenCompra>> GetOrdenesPendientesAsync();
+        Task<OrdenCompraResumenDTO?> GetResumenOrdenesPorFechaAsync(DateTime fecha);
     }
 }

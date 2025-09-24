@@ -19,6 +19,7 @@ namespace ExGradoBack.Models
         public required string Vendedor { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
 
         public virtual ICollection<DetalleFactura> Detalles { get; set; } = new List<DetalleFactura>();

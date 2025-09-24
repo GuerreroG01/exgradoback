@@ -111,6 +111,9 @@ namespace ExGradoBack.Data
             modelBuilder.Entity<Repuesto>()
                 .HasIndex(r => r.Nombre)
                 .HasDatabaseName("IX_Nombre_Repuesto");
+            modelBuilder.Entity<Proveedor>()
+                .HasIndex(p => p.Nombre)
+                .HasDatabaseName("IX_Nombre_Proveedor");
 
 
             base.OnModelCreating(modelBuilder);

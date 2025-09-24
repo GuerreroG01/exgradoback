@@ -15,7 +15,13 @@ namespace ExGradoBack.Jobs
             RecurringJob.AddOrUpdate<BackupJob>(
                 "backup-job",
                 job => job.RunAsync(),
-                Cron.Daily(19, 46),
+                Cron.Daily(14, 00),
+                opcionJob
+            );
+            RecurringJob.AddOrUpdate<OrdenCompraEmailJob>(
+                "orden-compra-job",
+                job => job.RunAsync(),
+                Cron.Daily(14, 00),
                 opcionJob
             );
         }

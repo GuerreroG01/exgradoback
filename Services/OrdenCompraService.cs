@@ -1,15 +1,19 @@
 using ExGradoBack.Models;
+using Microsoft.Extensions.Logging;
 using ExGradoBack.Repositories;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Services
 {
     public class OrdenCompraService : IOrdenCompraService
     {
         private readonly IOrdenCompraRepository _repository;
+        private readonly ILogger<OrdenCompraService> _logger;
 
-        public OrdenCompraService(IOrdenCompraRepository repository)
+        public OrdenCompraService(IOrdenCompraRepository repository, ILogger<OrdenCompraService> logger)
         {
             _repository = repository;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<int>> GetAniosConOrdenesAsync()
@@ -51,20 +55,39 @@ namespace ExGradoBack.Services
 
         public async Task<OrdenCompra> CreateOrdenAsync(OrdenCompra orden)
         {
-            ValidarOrdenCompra(orden, isUpdate: false);
+            _logger.LogInformation("Creando orden de compra. Datos: {@orden}", orden);
 
-            return await _repository.CreateOrdenAsync(orden);
+            try
+            {
+                ValidarOrdenCompra(orden, isUpdate: false);
+                var resultado = await _repository.CreateOrdenAsync(orden);
+                _logger.LogInformation("Orden creada con éxito. ID: {Id}", resultado.Id);
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear la orden de compra.");
+                throw;
+            }
         }
 
         public async Task<OrdenCompra> UpdateOrdenAsync(OrdenCompra orden)
         {
-            ValidarOrdenCompra(orden, isUpdate: true);
-
             var existente = await _repository.GetOrdenByIdAsync(orden.Id);
             if (existente == null)
+            {
                 throw new KeyNotFoundException("La orden que intenta actualizar no existe.");
+            }
 
-            return await _repository.UpdateOrdenAsync(orden);
+            existente.Fecha = orden.Fecha;
+            existente.ProveedorId = orden.ProveedorId;
+            existente.Total = orden.Total;
+            existente.Estado = orden.Estado;
+            existente.Solicitante = orden.Solicitante;
+
+            await _repository.SaveChangesAsync();
+
+            return existente;
         }
 
         public async Task<bool> DeleteOrdenAsync(int id)
@@ -86,6 +109,10 @@ namespace ExGradoBack.Services
 
             return await _repository.OrdenExistsAsync(id);
         }
+        public async Task<List<OrdenCompra>> GetOrdenesPendientesAsync()
+        {
+            return await _repository.GetOrdenesPendientesAsync();
+        }
 
         private void ValidarOrdenCompra(OrdenCompra orden, bool isUpdate = false)
         {
@@ -103,21 +130,10 @@ namespace ExGradoBack.Services
 
             if (orden.Total < 0)
                 throw new ArgumentException("El total no puede ser negativo.");
-
-            if (orden.Detalles == null || !orden.Detalles.Any())
-                throw new ArgumentException("La orden debe tener al menos un detalle.");
-
-            foreach (var detalle in orden.Detalles)
-            {
-                if (detalle.RepuestoId <= 0)
-                    throw new ArgumentException("Cada detalle debe tener un ID de repuesto válido.");
-
-                if (detalle.Cantidad <= 0)
-                    throw new ArgumentException("La cantidad de cada repuesto debe ser mayor a cero.");
-
-                if (detalle.PrecioUnitario < 0)
-                    throw new ArgumentException("El precio unitario no puede ser negativo.");
-            }
+        }
+        public async Task<OrdenCompraResumenDTO?> GetResumenOrdenesPorFechaAsync(DateTime fecha)
+        {
+            return await _repository.GetResumenOrdenesPorFechaAsync(fecha);
         }
     }
 }

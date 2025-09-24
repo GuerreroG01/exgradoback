@@ -1,5 +1,6 @@
 using ExGradoBack.Models;
 using ExGradoBack.Services;
+using ExGradoBack.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExGradoBack.Controllers
@@ -161,6 +162,26 @@ namespace ExGradoBack.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+        [HttpGet("cantidad_estados")]
+        public async Task<ActionResult<OrdenCompraResumenDTO?>> GetResumenOrdenesPorFecha([FromQuery] DateTime fecha)
+        {
+            try
+            {
+                var resumen = await _ordenService.GetResumenOrdenesPorFechaAsync(fecha);
+                if (resumen == null)
+                    return NotFound(new { mensaje = "No se encontraron órdenes para la fecha especificada." });
+
+                return Ok(resumen);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
             }
             catch (Exception ex)
             {

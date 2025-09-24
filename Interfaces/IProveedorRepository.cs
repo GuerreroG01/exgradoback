@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Repositories
 {
     public interface IProveedorRepository
@@ -11,5 +12,6 @@ namespace ExGradoBack.Repositories
         Task SaveChangesAsync();
         Task<IEnumerable<string>> GetCountryProvAsync();
         Task<IEnumerable<string>> GetCityProvAsync(string country);
+        Task<IEnumerable<ProveedorMinInfo>> BuscarProveedoresPorNombreAsync(string termino, int limite = 10);
     }
 }

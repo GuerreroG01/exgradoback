@@ -13,21 +13,23 @@ namespace ExGradoBack.Models
         public int OrdenCompraId { get; set; }
 
         [ForeignKey("OrdenCompraId")]
-        public virtual OrdenCompra OrdenCompra { get; set; } = null!;
+        public virtual OrdenCompra? OrdenCompra { get; set; } = null!;
 
         [Required]
         public int RepuestoId { get; set; }
 
         [ForeignKey("RepuestoId")]
-        public virtual Repuesto Repuesto { get; set; } = null!;
+        public virtual Repuesto? Repuesto { get; set; } = null!;
 
         [Required]
         public int Cantidad { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioUnitario { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Subtotal { get; set; }
     }
 }

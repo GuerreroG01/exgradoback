@@ -14,5 +14,6 @@ namespace ExGradoBack.Services
         Task<bool> ProveedorExistsAsync(string nombre);
         Task<IEnumerable<string>> GetCountryProvAsync();
         Task<IEnumerable<string>> GetCityProvAsync(string country);
+        Task<IEnumerable<ProveedorMinInfo>> AutocompletarProveedoresAsync(string nombre);
     }
 }

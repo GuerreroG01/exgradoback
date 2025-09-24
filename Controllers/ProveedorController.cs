@@ -147,5 +147,23 @@ namespace ExGradoBack.Controllers
                 return StatusCode(500, new { message = "Error interno del servidor", detalle = ex.Message });
             }
         }
+        [HttpGet("byName/{nombre}")]
+        public async Task<IActionResult> GetByNameProveedores([FromRoute] string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                return BadRequest(new { message = "El nombre es obligatorio." });
+            }
+
+            try
+            {
+                var proveedores = await _proveedorService.AutocompletarProveedoresAsync(nombre);
+                return Ok(proveedores);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detalle = ex.Message });
+            }
+        }
     }
 }
