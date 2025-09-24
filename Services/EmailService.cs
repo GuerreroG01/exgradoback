@@ -64,7 +64,7 @@ namespace ExGradoBack.Services
                 detallesHtml.AppendLine("<tr>");
                 detallesHtml.AppendLine($"<td>{nombreRepuesto}</td>");
                 detallesHtml.AppendLine($"<td>{item.Cantidad}</td>");
-                detallesHtml.AppendLine($"<td>{item.PrecioUnitario:C}</td>");
+                detallesHtml.AppendLine($"<td>{item.PrecioProveedor:C}</td>");
                 detallesHtml.AppendLine($"<td>{item.Subtotal:C}</td>");
                 detallesHtml.AppendLine("</tr>");
             }

@@ -26,7 +26,7 @@ namespace ExGradoBack.Models
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal PrecioUnitario { get; set; }
+        public decimal PrecioProveedor { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

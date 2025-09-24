@@ -36,7 +36,7 @@ namespace ExGradoBack.Services
             if (!await _repuestoRepository.RepuestoExistsAsync(detalle.RepuestoId))
                 throw new Exception($"El repuesto con Id {detalle.RepuestoId} no existe");
 
-            detalle.Subtotal = detalle.Cantidad * detalle.PrecioUnitario;
+            detalle.Subtotal = detalle.Cantidad * detalle.PrecioProveedor;
             return await _detalleOrdenRepository.CreateDetalleOrdenAsync(detalle);
         }
         public async Task<DetalleOrdenCompra> UpdateDetalleOrdenAsync(DetalleOrdenCompra detalle)

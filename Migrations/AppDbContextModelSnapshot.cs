@@ -59,7 +59,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 9, 22, 10, 5, 2, 778, DateTimeKind.Local).AddTicks(3022),
+                            FechaRegistro = new DateTime(2025, 9, 24, 16, 21, 15, 307, DateTimeKind.Local).AddTicks(5183),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
@@ -67,7 +67,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 2,
-                            FechaRegistro = new DateTime(2025, 9, 22, 10, 5, 2, 778, DateTimeKind.Local).AddTicks(3026),
+                            FechaRegistro = new DateTime(2025, 9, 24, 16, 21, 15, 307, DateTimeKind.Local).AddTicks(5188),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 2,
                             Username = "Invitado"
@@ -150,7 +150,7 @@ namespace ExGradoBack.Migrations
                     b.Property<int>("OrdenCompraId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PrecioUnitario")
+                    b.Property<decimal>("PrecioProveedor")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("RepuestoId")
@@ -353,6 +353,9 @@ namespace ExGradoBack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nombre")
+                        .HasDatabaseName("IX_Nombre_Proveedor");
+
                     b.ToTable("Proveedor");
                 });
 
@@ -379,8 +382,11 @@ namespace ExGradoBack.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<decimal>("PrecioProveedor")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("PrecioUnitario")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("StockActual")
                         .HasColumnType("int");

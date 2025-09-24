@@ -18,9 +18,13 @@ namespace ExGradoBack.Models
         [StringLength(500)]
         public string? Descripcion { get; set; }
 
-        [Required(ErrorMessage="Se debe ingresar un precio unitario.")]
+        [Required(ErrorMessage = "Se debe ingresar un precio unitario.")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioUnitario { get; set; }
-        [Required(ErrorMessage="Falta el stock actual.")]
+        [Required(ErrorMessage = "Se debe ingresar el precio del proveedor utilizado.")]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal PrecioProveedor { get; set; }
+        [Required(ErrorMessage = "Falta el stock actual.")]
         public int StockActual { get; set; }
         [Required(ErrorMessage="Es necesario fijar un stock minimo.")]
         public int StockMinimo { get; set; }
