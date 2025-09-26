@@ -64,9 +64,26 @@ namespace ExGradoBack.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var eliminado = await _marcaRepuestoService.DeleteMarcaRepuestoAsync(id);
-            if (!eliminado) return NotFound();
-            return NoContent();
+            try
+            {
+                var eliminado = await _marcaRepuestoService.DeleteMarcaRepuestoAsync(id);
+                if (!eliminado)
+                    return NotFound();
+
+                return NoContent(); 
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
+            }
         }
         [HttpGet("mejores_marcas")]
         public async Task<IActionResult> ObtenerMarcasRepuestoMasUsadas()

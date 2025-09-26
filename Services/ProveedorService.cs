@@ -68,7 +68,15 @@ namespace ExGradoBack.Services
             {
                 throw new KeyNotFoundException($"Proveedor con ID {id} no encontrado.");
             }
-            return await _proveedorRepository.DeleteProveedorAsync(id);
+
+            try
+            {
+                return await _proveedorRepository.DeleteProveedorAsync(id);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException("No se puede eliminar el proveedor porque tiene órdenes de compra asociadas.", ex);
+            }
         }
         public async Task<bool> ProveedorExistsAsync(string nombre)
         {

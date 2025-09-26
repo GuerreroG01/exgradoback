@@ -100,20 +100,24 @@ namespace ExGradoBack.Controllers
         {
             try
             {
-                var deleted = await _proveedorService.DeleteProveedorAsync(id);
-                if (!deleted)
-                {
-                    return NotFound(new { message = $"Proveedor con ID {id} no encontrado." });
-                }
-                return NoContent();
+                var eliminado = await _proveedorService.DeleteProveedorAsync(id);
+                if (eliminado)
+                    return NoContent();
+
+                return NotFound();
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { mensaje = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error interno del servidor", detalle = ex.Message });
+                _logger.LogError(ex, "Error inesperado al eliminar el proveedor con ID {id}", id);
+                return StatusCode(500, "Error interno del servidor.");
             }
         }
         [HttpGet("Countries")]

@@ -1,6 +1,7 @@
 using ExGradoBack.Models;
 using ExGradoBack.Repositories;
 using ExGradoBack.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExGradoBack.Services
 {
@@ -63,8 +64,23 @@ namespace ExGradoBack.Services
             return await _marcaRepuestoRepository.UpdateMarcaRepuestoAsync(marcaOriginal);
         }
 
-        public Task<bool> DeleteMarcaRepuestoAsync(int id)
-            => _marcaRepuestoRepository.DeleteMarcaRepuestoAsync(id);
+        public async Task<bool> DeleteMarcaRepuestoAsync(int id)
+        {
+            var existingMarca = await _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(id);
+            if (existingMarca == null)
+            {
+                throw new KeyNotFoundException($"Marca de repuesto con ID {id} no encontrada.");
+            }
+
+            try
+            {
+                return await _marcaRepuestoRepository.DeleteMarcaRepuestoAsync(id);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException("No se puede eliminar la marca porque tiene repuestos asociados.", ex);
+            }
+        }
 
         public Task<bool> MarcaRepuestoExistsAsync(string nombre)
             => _marcaRepuestoRepository.MarcaRepuestoExistsAsync(nombre);
