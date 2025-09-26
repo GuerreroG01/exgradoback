@@ -5,6 +5,7 @@ namespace ExGradoBack.Repositories
     public interface IVehiculoInfoRepository
     {
         Task<IEnumerable<object>> GetVehiculoInfosByMarcaAndAnioAsync(string? marca, int? anio, bool isMinInfo = false);
+        Task<IEnumerable<object>> GetVehiculoInfosByModeloAsync(string? modelo, bool isMinInfo = false);
         Task<VehiculoInfo?> GetVehiculoInfoByIdAsync(int id);
         Task<VehiculoInfo> CreateVehiculoInfoAsync(VehiculoInfo vehiculoInfo);
         Task<VehiculoInfo> UpdateVehiculoInfoAsync(VehiculoInfo vehiculoInfo);

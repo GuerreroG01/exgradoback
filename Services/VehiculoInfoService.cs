@@ -43,6 +43,26 @@ namespace ExGradoBack.Services
 
             return resultado.Cast<VehiculoInfoMinDto>();
         }
+        public async Task<IEnumerable<VehiculoInfo>> GetVehiculoFullAsync(string? modelo)
+        {
+            var resultado = await _vehiculoInfoRepository.GetVehiculoInfosByModeloAsync(modelo, false);
+            if (!resultado.Any())
+            {
+                throw new InvalidOperationException("No se encontraron vehículos con los filtros proporcionados.");
+            }
+
+            return resultado.Cast<VehiculoInfo>();
+        }
+        public async Task<IEnumerable<VehiculoInfoMinDto>> GetVehiculoMinAsync(string? modelo)
+        {
+            var resultado = await _vehiculoInfoRepository.GetVehiculoInfosByModeloAsync(modelo, true);
+            if (!resultado.Any())
+            {
+                throw new InvalidOperationException("No se encontraron vehículos con los filtros proporcionados.");
+            }
+
+            return resultado.Cast<VehiculoInfoMinDto>();
+        }
 
         public Task<VehiculoInfo?> GetVehiculoInfoByIdAsync(int id)
             => _vehiculoInfoRepository.GetVehiculoInfoByIdAsync(id);

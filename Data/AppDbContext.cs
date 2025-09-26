@@ -34,10 +34,13 @@ namespace ExGradoBack.Data
                 .HasForeignKey<InfoUser>(i => i.AuthId);
 
             modelBuilder.Entity<Repuesto>()
-            .HasOne(r => r.VehiculoInfo)
-            .WithMany()
-            .HasForeignKey(r => r.VehiculoInfoId)
-            .OnDelete(DeleteBehavior.Restrict);
+                .HasMany(r => r.VehiculoInfoIds)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "RepuestoVehiculoInfo",
+                    r => r.HasOne<VehiculoInfo>().WithMany().HasForeignKey("VehiculoInfoId"),
+                    v => v.HasOne<Repuesto>().WithMany().HasForeignKey("RepuestoId")
+                );
 
             modelBuilder.Entity<Repuesto>()
                 .HasOne(r => r.MarcaRepuesto)
@@ -107,13 +110,31 @@ namespace ExGradoBack.Data
             modelBuilder.Entity<MarcaRepuesto>()
                 .HasIndex(m => m.Nombre)
                 .HasDatabaseName("IX_Nombre_Marca");
+            modelBuilder.Entity<MarcaRepuesto>()
+                .HasIndex(m => m.Calificacion)
+                .HasDatabaseName("IX_Calificacion_Marca");
 
             modelBuilder.Entity<Repuesto>()
                 .HasIndex(r => r.Nombre)
                 .HasDatabaseName("IX_Nombre_Repuesto");
+            modelBuilder.Entity<Repuesto>()
+                .HasIndex(r => r.Ubicacion)
+                .HasDatabaseName("IX_Ubicacion_Repuesto");
             modelBuilder.Entity<Proveedor>()
                 .HasIndex(p => p.Nombre)
                 .HasDatabaseName("IX_Nombre_Proveedor");
+            modelBuilder.Entity<Factura>()
+                .HasIndex(f => f.Fecha)
+                .HasDatabaseName("IX_Factura_Fecha");
+            modelBuilder.Entity<OrdenCompra>()
+                .HasIndex(o => o.Fecha)
+                .HasDatabaseName("IX_OrdenCompra_Fecha");
+            modelBuilder.Entity<Proveedor>()
+                .HasIndex(p => p.Nombre)
+                .HasDatabaseName("IX_Nombre_Proveedor");
+            modelBuilder.Entity<Proveedor>()
+                .HasIndex(p => new {p.Pais, p.Ciudad })
+                .HasDatabaseName("IX_PaisCiudad_Proveedor");
 
 
             base.OnModelCreating(modelBuilder);

@@ -14,16 +14,22 @@ namespace ExGradoBack.Repositories
         public async Task<IEnumerable<Repuesto>> GetRepuestosByNameAsync(string nombre)
         {
             return await _context.Repuesto
+                .Include(r => r.VehiculoInfoIds)
+                .Include(r => r.MarcaRepuesto)
                 .Where(r => r.Nombre.Contains(nombre))
                 .ToListAsync();
         }
         public async Task<Repuesto?> GetRepuestoByIdAsync(int id)
         {
-            return await _context.Repuesto.FindAsync(id);
+            return await _context.Repuesto
+                .Include(r => r.VehiculoInfoIds)
+                .Include(r => r.MarcaRepuesto)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
         public async Task<IEnumerable<Repuesto>> GetRepuestosByUbicacionAsync(string ubicacion)
         {
             return await _context.Repuesto
+                .Include(r => r.VehiculoInfoIds)
                 .Where(r => r.Ubicacion.Contains(ubicacion))
                 .ToListAsync();
         }

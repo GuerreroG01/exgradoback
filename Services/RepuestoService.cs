@@ -1,6 +1,7 @@
 using ExGradoBack.Models;
 using ExGradoBack.Repositories;
 using System.ComponentModel.DataAnnotations;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Services
 {
     public class RepuestoService : IRepuestoService
@@ -30,50 +31,77 @@ namespace ExGradoBack.Services
             return await _repuestoRepository.GetRepuestosByUbicacionAsync(ubicacion);
         }
 
-        public async Task<Repuesto> CreateRepuestoAsync(Repuesto repuesto)
+        public async Task<Repuesto> CreateRepuestoAsync(RepuestoDto repuestoDto)
         {
-            var context = new ValidationContext(repuesto);
-            Validator.ValidateObject(repuesto, context, validateAllProperties: true);
-            if (repuesto.VehiculoInfoId <= 0)
-                throw new ValidationException("ID de vehículo inválido.");
-            if (repuesto.MarcaRepuestoId <= 0)
+            if (repuestoDto.MarcaRepuestoId <= 0)
                 throw new ValidationException("ID de marca de repuesto inválido.");
-            var idVehiculo = repuesto.VehiculoInfoId;
-            var vehiculoInfo = await _vehiculoInfoRepository.GetVehiculoInfoByIdAsync(idVehiculo);
-            if (vehiculoInfo == null)
-            {
-                throw new KeyNotFoundException($"El vehículo con ID {idVehiculo} no ha sido encontrado.");
-            }
-            var idMarcaRepuesto = repuesto.MarcaRepuestoId;
-            var marcaRepuesto = await _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(idMarcaRepuesto);
+
+            if (repuestoDto.VehiculoInfoIds == null || !repuestoDto.VehiculoInfoIds.Any())
+                throw new ValidationException("Debe especificar al menos un vehículo compatible.");
+
+            var marcaRepuesto = await _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(repuestoDto.MarcaRepuestoId);
             if (marcaRepuesto == null)
+                throw new KeyNotFoundException($"La marca de repuesto con ID {repuestoDto.MarcaRepuestoId} no ha sido encontrada.");
+
+            var vehiculos = new List<VehiculoInfo>();
+            foreach (var vehiculoId in repuestoDto.VehiculoInfoIds)
             {
-                throw new KeyNotFoundException($"La marca de repuesto con ID {idMarcaRepuesto} no ha sido encontrada.");
+                var vehiculo = await _vehiculoInfoRepository.GetVehiculoInfoByIdAsync(vehiculoId);
+                if (vehiculo == null)
+                    throw new KeyNotFoundException($"El vehículo con ID {vehiculoId} no ha sido encontrado.");
+                vehiculos.Add(vehiculo);
             }
+
+            var repuesto = new Repuesto
+            {
+                Nombre = repuestoDto.Nombre,
+                Descripcion = repuestoDto.Descripcion,
+                PrecioUnitario = repuestoDto.PrecioUnitario,
+                PrecioProveedor = repuestoDto.PrecioProveedor,
+                StockActual = repuestoDto.StockActual,
+                StockMinimo = repuestoDto.StockMinimo,
+                FechaAbastecimiento = repuestoDto.FechaAbastecimiento,
+                Ubicacion = repuestoDto.Ubicacion,
+                MarcaRepuestoId = repuestoDto.MarcaRepuestoId,
+                VehiculoInfoIds = vehiculos
+            };
+
             return await _repuestoRepository.CreateRepuestoAsync(repuesto);
         }
 
-        public async Task<Repuesto> UpdateRepuestoAsync(Repuesto repuesto)
+        public async Task<Repuesto> UpdateRepuestoAsync(int id, RepuestoDto repuestodto)
         {
-            var context = new ValidationContext(repuesto);
-            Validator.ValidateObject(repuesto, context, validateAllProperties: true);
-            if (repuesto.VehiculoInfoId <= 0)
-                throw new ValidationException("ID de vehículo inválido.");
-            if (repuesto.MarcaRepuestoId <= 0)
-                throw new ValidationException("ID de marca de repuesto inválido.");
-            var idVehiculo = repuesto.VehiculoInfoId;
-            var vehiculoInfo = await _vehiculoInfoRepository.GetVehiculoInfoByIdAsync(idVehiculo);
-            if (vehiculoInfo == null)
-            {
-                throw new KeyNotFoundException($"El vehículo con ID {idVehiculo} no ha sido encontrado.");
-            }
-            var idMarcaRepuesto = repuesto.MarcaRepuestoId;
-            var marcaRepuesto = await _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(idMarcaRepuesto);
+            var repuestoExistente = await _repuestoRepository.GetRepuestoByIdAsync(id);
+            if (repuestoExistente == null)
+                throw new KeyNotFoundException($"Repuesto con ID {id} no encontrado.");
+
+            var marcaRepuesto = await _marcaRepuestoRepository.GetMarcaRepuestoByIdAsync(repuestodto.MarcaRepuestoId);
             if (marcaRepuesto == null)
+                throw new KeyNotFoundException($"Marca de repuesto con ID {repuestodto.MarcaRepuestoId} no encontrada.");
+
+            if (repuestodto.VehiculoInfoIds == null || !repuestodto.VehiculoInfoIds.Any())
+                throw new ValidationException("Debe especificar al menos un vehículo compatible.");
+
+            var vehiculos = new List<VehiculoInfo>();
+            foreach (var vehiculoId in repuestodto.VehiculoInfoIds.Distinct())
             {
-                throw new KeyNotFoundException($"La marca de repuesto con ID {idMarcaRepuesto} no ha sido encontrada.");
+                var vehiculo = await _vehiculoInfoRepository.GetVehiculoInfoByIdAsync(vehiculoId);
+                if (vehiculo == null)
+                    throw new KeyNotFoundException($"Vehículo con ID {vehiculoId} no encontrado.");
+                vehiculos.Add(vehiculo);
             }
-            return await _repuestoRepository.UpdateRepuestoAsync(repuesto);
+            repuestoExistente.Nombre = repuestodto.Nombre;
+            repuestoExistente.Descripcion = repuestodto.Descripcion;
+            repuestoExistente.PrecioUnitario = repuestodto.PrecioUnitario;
+            repuestoExistente.PrecioProveedor = repuestodto.PrecioProveedor;
+            repuestoExistente.StockActual = repuestodto.StockActual;
+            repuestoExistente.StockMinimo = repuestodto.StockMinimo;
+            repuestoExistente.FechaAbastecimiento = repuestodto.FechaAbastecimiento;
+            repuestoExistente.Ubicacion = repuestodto.Ubicacion;
+            repuestoExistente.MarcaRepuestoId = repuestodto.MarcaRepuestoId;
+            repuestoExistente.VehiculoInfoIds = vehiculos;
+
+            return await _repuestoRepository.UpdateRepuestoAsync(repuestoExistente);
         }
 
         public async Task<bool> DeleteRepuestoAsync(int id)

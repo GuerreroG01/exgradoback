@@ -59,7 +59,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 9, 24, 16, 21, 15, 307, DateTimeKind.Local).AddTicks(5183),
+                            FechaRegistro = new DateTime(2025, 9, 25, 16, 9, 52, 941, DateTimeKind.Local).AddTicks(2573),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
@@ -67,7 +67,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 2,
-                            FechaRegistro = new DateTime(2025, 9, 24, 16, 21, 15, 307, DateTimeKind.Local).AddTicks(5188),
+                            FechaRegistro = new DateTime(2025, 9, 25, 16, 9, 52, 941, DateTimeKind.Local).AddTicks(2578),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 2,
                             Username = "Invitado"
@@ -199,6 +199,9 @@ namespace ExGradoBack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Fecha")
+                        .HasDatabaseName("IX_Factura_Fecha");
+
                     b.ToTable("Factura");
                 });
 
@@ -266,6 +269,9 @@ namespace ExGradoBack.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Calificacion")
+                        .HasDatabaseName("IX_Calificacion_Marca");
+
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_Nombre_Marca");
 
@@ -298,6 +304,9 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Fecha")
+                        .HasDatabaseName("IX_OrdenCompra_Fecha");
 
                     b.HasIndex("ProveedorId");
 
@@ -356,6 +365,9 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_Nombre_Proveedor");
 
+                    b.HasIndex("Pais", "Ciudad")
+                        .HasDatabaseName("IX_PaisCiudad_Proveedor");
+
                     b.ToTable("Proveedor");
                 });
 
@@ -396,10 +408,7 @@ namespace ExGradoBack.Migrations
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("VehiculoInfoId")
-                        .HasColumnType("int");
+                        .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
 
@@ -408,7 +417,8 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_Nombre_Repuesto");
 
-                    b.HasIndex("VehiculoInfoId");
+                    b.HasIndex("Ubicacion")
+                        .HasDatabaseName("IX_Ubicacion_Repuesto");
 
                     b.ToTable("Repuesto");
                 });
@@ -481,6 +491,21 @@ namespace ExGradoBack.Migrations
                         .HasDatabaseName("IX_VehiculoInfo_Marca_Anio");
 
                     b.ToTable("VehiculoInfo");
+                });
+
+            modelBuilder.Entity("RepuestoVehiculoInfo", b =>
+                {
+                    b.Property<int>("RepuestoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VehiculoInfoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RepuestoId", "VehiculoInfoId");
+
+                    b.HasIndex("VehiculoInfoId");
+
+                    b.ToTable("RepuestoVehiculoInfo");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Auth", b =>
@@ -562,15 +587,22 @@ namespace ExGradoBack.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ExGradoBack.Models.VehiculoInfo", "VehiculoInfo")
+                    b.Navigation("MarcaRepuesto");
+                });
+
+            modelBuilder.Entity("RepuestoVehiculoInfo", b =>
+                {
+                    b.HasOne("ExGradoBack.Models.Repuesto", null)
                         .WithMany()
-                        .HasForeignKey("VehiculoInfoId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("RepuestoId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MarcaRepuesto");
-
-                    b.Navigation("VehiculoInfo");
+                    b.HasOne("ExGradoBack.Models.VehiculoInfo", null)
+                        .WithMany()
+                        .HasForeignKey("VehiculoInfoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Auth", b =>

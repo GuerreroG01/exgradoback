@@ -1,6 +1,8 @@
 using ExGradoBack.Models;
 using ExGradoBack.Services;
+using ExGradoBack.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 namespace ExGradoBack.Controllers
 {
     [ApiController]
@@ -35,18 +37,47 @@ namespace ExGradoBack.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Repuesto repuesto)
+        public async Task<IActionResult> Create([FromBody] RepuestoDto dto)
         {
-            var nuevoRepuesto = await _repuestoService.CreateRepuestoAsync(repuesto);
-            return CreatedAtAction(nameof(GetById), new { id = nuevoRepuesto.Id }, nuevoRepuesto);
+            try
+            {
+                var nuevoRepuesto = await _repuestoService.CreateRepuestoAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = nuevoRepuesto.Id }, nuevoRepuesto);
+            }
+            catch (ValidationException valEx)
+            {
+                return BadRequest(valEx.Message);
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(knfEx.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Repuesto repuesto)
+        public async Task<IActionResult> UpdateRepuesto(int id, [FromBody] RepuestoDto dto)
         {
-            if (id != repuesto.Id) return BadRequest("El ID del repuesto no coincide.");
-            var actualizado = await _repuestoService.UpdateRepuestoAsync(repuesto);
-            return Ok(actualizado);
+            try
+            {
+                var repuestoActualizado = await _repuestoService.UpdateRepuestoAsync(id, dto);
+                return Ok(repuestoActualizado);
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(knfEx.Message);
+            }
+            catch (ValidationException valEx)
+            {
+                return BadRequest(valEx.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         [HttpDelete("{id}")]

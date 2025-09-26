@@ -21,20 +21,25 @@ namespace ExGradoBack.Models
         [Required(ErrorMessage = "Se debe ingresar un precio unitario.")]
         [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioUnitario { get; set; }
+
         [Required(ErrorMessage = "Se debe ingresar el precio del proveedor utilizado.")]
         [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioProveedor { get; set; }
+
         [Required(ErrorMessage = "Falta el stock actual.")]
         public int StockActual { get; set; }
-        [Required(ErrorMessage="Es necesario fijar un stock minimo.")]
+
+        [Required(ErrorMessage = "Es necesario fijar un stock mínimo.")]
         public int StockMinimo { get; set; }
 
         [Required(ErrorMessage = "Se debe ingresar la fecha de abastecimiento.")]
         public DateTime FechaAbastecimiento { get; set; } = DateTime.Now;
-        [Required(ErrorMessage="No hay ubicación")]
+
+        [Required(ErrorMessage = "No hay ubicación")]
         public string Ubicacion { get; set; } = string.Empty;
-        public int VehiculoInfoId { get; set; }
-        public virtual VehiculoInfo? VehiculoInfo { get; set; }
+
+        public virtual ICollection<VehiculoInfo> VehiculoInfoIds { get; set; } = new List<VehiculoInfo>();
+
         public int MarcaRepuestoId { get; set; }
         public virtual MarcaRepuesto? MarcaRepuesto { get; set; }
     }

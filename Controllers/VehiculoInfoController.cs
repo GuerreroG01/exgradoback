@@ -42,6 +42,31 @@ namespace ExGradoBack.Controllers
                 return StatusCode(500, new { message = "Error interno del servidor", detalle = ex.Message });
             }
         }
+        [HttpGet("by_modelo")]
+        public async Task<IActionResult> GetByModelo([FromQuery] string? modelo, [FromQuery] bool isMinInfo = false)
+        {
+            try
+            {
+                if (isMinInfo)
+                {
+                    var vehiculosMin = await _vehiculoInfoService.GetVehiculoMinAsync(modelo);
+                    return Ok(vehiculosMin);
+                }
+                else
+                {
+                    var vehiculosFull = await _vehiculoInfoService.GetVehiculoFullAsync(modelo);
+                    return Ok(vehiculosFull);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detalle = ex.Message });
+            }
+        }   
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

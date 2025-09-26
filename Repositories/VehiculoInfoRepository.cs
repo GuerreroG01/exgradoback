@@ -43,6 +43,30 @@ namespace ExGradoBack.Repositories
 
             return await query.ToListAsync();
         }
+        public async Task<IEnumerable<object>> GetVehiculoInfosByModeloAsync(string? modelo, bool isMinInfo = false)
+        {
+            var query = _context.VehiculoInfo.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(modelo))
+            {
+                query = query.Where(v => v.Modelo != null && v.Modelo.ToLower().Contains(modelo.ToLower()));
+            }
+
+            if (isMinInfo)
+            {
+                return await query
+                    .Select(v => new VehiculoInfoMinDto
+                    {
+                        Id = v.Id,
+                        Marca = v.Marca,
+                        Modelo = v.Modelo,
+                        FotoReferencia = v.FotoReferencia
+                    })
+                    .ToListAsync();
+            }
+
+            return await query.ToListAsync();
+        }
 
         public async Task<VehiculoInfo?> GetVehiculoInfoByIdAsync(int id)
         {
