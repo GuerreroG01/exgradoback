@@ -1,6 +1,7 @@
 using ExGradoBack.Services;
 using ExGradoBack.Repositories;
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -8,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using BCrypt.Net;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 
 namespace ExGradoBack.Services
 {
@@ -84,17 +86,27 @@ namespace ExGradoBack.Services
         {
             return await _authRepository.DeleteAsync(id);
         }
-
-        public async Task<string?> LoginAsync(string username, string password, bool isLogin)
+        public async Task<bool> ValidateCredentialsAsync(string username, string password)
+        {
+            var user = await _authRepository.GetByUsernameAsync(username);
+            return user != null && BCrypt.Net.BCrypt.Verify(password, user.Password);
+        }
+        public async Task<TokenResponse?> LoginAsync(string username, string password)
         {
             var user = await _authRepository.GetByUsernameAsync(username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return null;
 
-            if (isLogin)
-                return GenerateJwtToken(user);
+            var accessToken = GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
 
-            return string.Empty;
+            await _authRepository.SaveRefreshTokenAsync(user.Id, refreshToken);
+
+            return new TokenResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = null
+            };
         }
 
         public async Task<Auth> RegisterAsync(RegisterDto dto)
@@ -181,6 +193,15 @@ namespace ExGradoBack.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
         public async Task<Auth> GetUserByUsernameAsync(string username)
         {
             var user = await _authRepository.GetByUsernameAsync(username);
@@ -192,9 +213,36 @@ namespace ExGradoBack.Services
 
             return user;
         }
+        public async Task<RefreshToken?> GetRefreshTokenAsync(int userId, string token)
+        {
+            return await _authRepository.GetRefreshTokenAsync(userId, token);
+        }
         public async Task<int> GetTotalUsersAsync()
         {
             return await _authRepository.CountUsersAsync();
+        }
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+        {
+            var jsonWebTokenSecret = Environment.GetEnvironmentVariable("JsonWebTokenSecret") ?? "";
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jsonWebTokenSecret)),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

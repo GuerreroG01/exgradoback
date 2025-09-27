@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ExGradoBack.Services;
+using ExGradoBack.Repositories;
 using ExGradoBack.Models;
 using ExGradoBack.DTOs;
 
@@ -10,10 +11,12 @@ namespace ExGradoBack.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IAuthRepository _authRepository;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IAuthRepository authRepository)
         {
             _authService = authService;
+            _authRepository = authRepository;
         }
 
         // GET: api/auth
@@ -46,17 +49,26 @@ namespace ExGradoBack.Controllers
 
         // POST: api/auth/login
         [HttpPost("login")]
-        public async Task<ActionResult<object>> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.LoginAsync(loginDto.Username, loginDto.Password, loginDto.isLogin);
-
+            var token = await _authService.LoginAsync(loginDto.Username, loginDto.Password);
             if (token == null)
                 return Unauthorized("Credenciales inválidas.");
 
-            if (!loginDto.isLogin)
-                return Ok("Credenciales válidas.");
+            var user = await _authService.GetUserByUsernameAsync(loginDto.Username);
+            var refreshToken = _authService.GenerateRefreshToken();
 
-            return Ok(new { token });
+            await _authRepository.SaveRefreshTokenAsync(user.Id, refreshToken);
+
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new { token = token.AccessToken });
         }
 
         // PUT: api/auth/5
@@ -111,6 +123,41 @@ namespace ExGradoBack.Controllers
         {
             int totalUsers = await _authService.GetTotalUsersAsync();
             return Ok(totalUsers);
+        }
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequest request)
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+                return Unauthorized("Refresh token no encontrado");
+
+            var principal = _authService.GetPrincipalFromExpiredToken(request.AccessToken);
+            if (principal == null)
+                return Unauthorized("Token inválido");
+
+            var userId = int.Parse(principal.FindFirst("id")?.Value ?? "0");
+            var refreshTokenDb = await _authRepository.GetRefreshTokenAsync(userId, refreshToken);
+
+            if (refreshTokenDb == null || refreshTokenDb.Expiration < DateTime.UtcNow)
+                return Unauthorized("Refresh token inválido o expirado");
+
+            var user = await _authRepository.GetByIdAsync(userId);
+            if (user == null) return Unauthorized();
+
+            var newAccessToken = _authService.GenerateJwtToken(user);
+            var newRefreshToken = _authService.GenerateRefreshToken();
+
+            await _authRepository.SaveRefreshTokenAsync(userId, newRefreshToken);
+
+            Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(new { token = newAccessToken });
         }
     }
 }

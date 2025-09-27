@@ -58,4 +58,22 @@ public class AuthRepository : IAuthRepository
     {
         return await _context.Auth.CountAsync();
     }
+    public async Task SaveRefreshTokenAsync(int userId, string token)
+    {
+        var refreshToken = new RefreshToken
+        {
+            UserId = userId,
+            Token = token,
+            Expiration = DateTime.UtcNow.AddDays(7)
+        };
+
+        _context.RefreshToken.Add(refreshToken);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<RefreshToken?> GetRefreshTokenAsync(int userId, string token)
+    {
+        return await _context.RefreshToken
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.Token == token);
+    }
 }

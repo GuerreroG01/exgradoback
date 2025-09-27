@@ -22,6 +22,39 @@ namespace ExGradoBack.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("ExGradoBack.Models.ActividadFactura", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("DatosAntes")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("DatosDespues")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("FacturaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ActividadFactura");
+                });
+
             modelBuilder.Entity("ExGradoBack.Models.Auth", b =>
                 {
                     b.Property<int>("Id")
@@ -59,7 +92,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 9, 25, 16, 9, 52, 941, DateTimeKind.Local).AddTicks(2573),
+                            FechaRegistro = new DateTime(2025, 9, 27, 12, 54, 57, 160, DateTimeKind.Local).AddTicks(4431),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
@@ -67,7 +100,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 2,
-                            FechaRegistro = new DateTime(2025, 9, 25, 16, 9, 52, 941, DateTimeKind.Local).AddTicks(2578),
+                            FechaRegistro = new DateTime(2025, 9, 27, 12, 54, 57, 160, DateTimeKind.Local).AddTicks(4434),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 2,
                             Username = "Invitado"
@@ -371,6 +404,31 @@ namespace ExGradoBack.Migrations
                     b.ToTable("Proveedor");
                 });
 
+            modelBuilder.Entity("ExGradoBack.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshToken");
+                });
+
             modelBuilder.Entity("ExGradoBack.Models.Repuesto", b =>
                 {
                     b.Property<int>("Id")
@@ -577,6 +635,17 @@ namespace ExGradoBack.Migrations
                         .IsRequired();
 
                     b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("ExGradoBack.Models.RefreshToken", b =>
+                {
+                    b.HasOne("ExGradoBack.Models.Auth", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Repuesto", b =>

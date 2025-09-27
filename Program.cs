@@ -12,6 +12,8 @@ using Hangfire;
 using Hangfire.MySql;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ExGradoBack
 {
@@ -58,6 +60,7 @@ namespace ExGradoBack
                             origin.StartsWith("http://localhost");
                     })
                     .AllowAnyHeader()
+                    .AllowCredentials()
                     .AllowAnyMethod()
                     .WithExposedHeaders("Content-Disposition");
                 });
@@ -98,6 +101,8 @@ namespace ExGradoBack
             builder.Services.AddScoped<IDetalleOrdenRepository, DetalleOrdenRepository>();
             builder.Services.AddScoped<IDetalleOrdenService, DetalleOrdenService>();
             builder.Services.AddScoped<IDetalleOrdenService, DetalleOrdenService>();
+            builder.Services.AddScoped<IActividadService, ActividadService>();
+            builder.Services.AddScoped<IActividadRepository, ActividadRepository>();
             builder.Services.AddScoped<IEmailService>(sp =>
             new EmailService(
                 Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com",
@@ -117,6 +122,27 @@ namespace ExGradoBack
 
             builder.Logging.AddSerilog();
             //builder.Logging.ClearProviders();
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwtSecret = Environment.GetEnvironmentVariable("JsonWebTokenSecret") ?? "";
+                    var key = Encoding.UTF8.GetBytes(jwtSecret);
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = true,
+                        ValidIssuer = "ExGradoSystem.com",
+                        ValidateAudience = true,
+                        ValidAudience = "ExGradoSystem.com",
+                        ValidateLifetime = true,
+                        NameClaimType = ClaimTypes.NameIdentifier,
+                    };
+                });
+
+            builder.Services.AddAuthorization();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -128,6 +154,7 @@ namespace ExGradoBack
             
             app.UseHttpsRedirection();
             app.UseCors("AllowLocalNetwork");
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseHangfireDashboard();
             app.UseStaticFiles(); //Servir archivos estáticos en wwwroot

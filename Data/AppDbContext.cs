@@ -13,6 +13,7 @@ namespace ExGradoBack.Data
         public DbSet<Rol> Rol { get; set; }
         //Modelo para Respaldo
         public DbSet<Backup> Backup { get; set; }
+        public DbSet<ActividadFactura> ActividadFactura { get; set; }
 
         //Modelos para el Negocio
         public DbSet<VehiculoInfo> VehiculoInfo { get; set; }
@@ -25,6 +26,7 @@ namespace ExGradoBack.Data
 
         public DbSet<OrdenCompra> OrdenCompra { get; set; }
         public DbSet<DetalleOrdenCompra> DetalleOrdenCompra { get; set; }
+        public DbSet<RefreshToken> RefreshToken { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +34,10 @@ namespace ExGradoBack.Data
                 .HasOne(a => a.InfoUser)
                 .WithOne(i => i.Auth)
                 .HasForeignKey<InfoUser>(i => i.AuthId);
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId);
 
             modelBuilder.Entity<Repuesto>()
                 .HasMany(r => r.VehiculoInfoIds)
@@ -133,7 +139,7 @@ namespace ExGradoBack.Data
                 .HasIndex(p => p.Nombre)
                 .HasDatabaseName("IX_Nombre_Proveedor");
             modelBuilder.Entity<Proveedor>()
-                .HasIndex(p => new {p.Pais, p.Ciudad })
+                .HasIndex(p => new { p.Pais, p.Ciudad })
                 .HasDatabaseName("IX_PaisCiudad_Proveedor");
 
 

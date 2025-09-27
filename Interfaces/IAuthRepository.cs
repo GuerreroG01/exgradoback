@@ -13,6 +13,7 @@ namespace ExGradoBack.Repositories
         Task<Auth> UpdateAsync(Auth updatedUser);
         Task<bool> DeleteAsync(int id);
         Task<int> CountUsersAsync();
-
+        Task SaveRefreshTokenAsync(int userId, string token);
+        Task<RefreshToken?> GetRefreshTokenAsync(int userId, string token);
     }
 }

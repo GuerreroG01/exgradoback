@@ -1,18 +1,28 @@
 using ExGradoBack.Models;
 using ExGradoBack.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExGradoBack.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FacturaController : ControllerBase
     {
         private readonly IFacturaService _facturaService;
+        private readonly IActividadService _actividadService;
 
-        public FacturaController(IFacturaService facturaService)
+        public FacturaController(IFacturaService facturaService, IActividadService actividadService)
         {
             _facturaService = facturaService;
+            _actividadService = actividadService;
+        }
+        [HttpGet("usuario")]
+        public IActionResult ObtenerUsuarioActual()
+        {
+            var usuario = User.Identity?.Name ?? "No autenticado";
+            return Ok(new { Usuario = usuario });
         }
 
         [HttpGet("year")]
@@ -140,9 +150,23 @@ namespace ExGradoBack.Controllers
         {
             try
             {
+                var facturaAntes = await _facturaService.GetFacturaByIdAsync(id);
+                if (facturaAntes == null)
+                    return NotFound(new { mensaje = "Factura no encontrada." });
+
                 var eliminada = await _facturaService.DeleteFacturaAsync(id);
                 if (!eliminada)
                     return NotFound(new { mensaje = "No se pudo eliminar la factura." });
+
+                var usuario = User.Identity?.Name ?? "Desconocido";
+
+                await _actividadService.RegistrarAsync(
+                    usuario,
+                    "Eliminar",
+                    id,
+                    facturaAntes,
+                    null
+                );
 
                 return NoContent();
             }
