@@ -55,11 +55,9 @@ namespace ExGradoBack.Repositories
             await _context.SaveChangesAsync();
             return factura;
         }
-        public async Task<Factura> UpdateFacturaAsync(Factura factura)
+        public async Task SaveChangesAsync()
         {
-            _context.Factura.Update(factura);
             await _context.SaveChangesAsync();
-            return factura;
         }
         public async Task<bool> DeleteFacturaAsync(int id)
         {

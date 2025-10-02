@@ -2,10 +2,11 @@ using ExGradoBack.Models;
 using ExGradoBack.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace ExGradoBack.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FacturaController : ControllerBase
@@ -125,23 +126,40 @@ namespace ExGradoBack.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Factura>> UpdateFactura(int id, [FromBody] Factura factura)
+        public async Task<IActionResult> UpdateFactura(int id, [FromBody] Factura factura)
         {
             if (id != factura.Id)
                 return BadRequest(new { mensaje = "El ID de la URL no coincide con el de la factura." });
 
             try
             {
-                var facturaActualizada = await _facturaService.UpdateFacturaAsync(factura);
-                return Ok(facturaActualizada);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { mensaje = ex.Message });
+                var facturaAntes = await _facturaService.GetFacturaByIdAsync(id);
+                var facturaAntesCopia = JsonSerializer.Deserialize<Factura>(
+                    JsonSerializer.Serialize(facturaAntes)
+                );
+                if (facturaAntes == null)
+                    return NotFound(new { mensaje = "Factura no encontrada." });
+
+                var actualizada = await _facturaService.UpdateFacturaAsync(factura);
+
+                var facturaDespues = await _facturaService.GetFacturaByIdAsync(id);
+                if (actualizada == null)
+                    return BadRequest(new { mensaje = "No se pudo actualizar la factura." });
+
+                var usuario = User.Identity?.Name ?? "Desconocido";
+                await _actividadService.RegistrarAsync(
+                    usuario,
+                    "Edición",
+                    id,
+                    facturaAntesCopia,
+                    facturaDespues
+                );
+
+                return Ok(factura);
             }
             catch (Exception ex)
             {
-                return NotFound(new { mensaje = ex.Message });
+                return BadRequest(new { mensaje = ex.Message });
             }
         }
 
@@ -162,7 +180,7 @@ namespace ExGradoBack.Controllers
 
                 await _actividadService.RegistrarAsync(
                     usuario,
-                    "Eliminar",
+                    "Eliminación",
                     id,
                     facturaAntes,
                     null
@@ -214,6 +232,28 @@ namespace ExGradoBack.Controllers
         {
             var result = await _facturaService.GetRepuestosVendidosPorDiaUltimaSemanaAsync();
             return Ok(result);
+        }
+        [HttpGet("actividades")]
+        public async Task<IActionResult> ObtenerActividades([FromQuery] string usuario, string? accion = null, [FromQuery] int? meses = null)
+        {
+            var actividades = await _actividadService.ObtenerActividadesAsync(usuario, accion, meses);
+            return Ok(actividades);
+        }
+        [HttpGet("actividades/{id}")]
+        public async Task<IActionResult> GetActividadById(int id)
+        {
+            try
+            {
+                var actividad = await _actividadService.GetActividadByIdAsync(id);
+                if (actividad == null)
+                    return NotFound(new { mensaje = "Actividad no encontrada." });
+
+                return Ok(actividad);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
         }
     }
 }

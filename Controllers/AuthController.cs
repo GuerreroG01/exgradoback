@@ -55,15 +55,12 @@ namespace ExGradoBack.Controllers
             if (token == null)
                 return Unauthorized("Credenciales inválidas.");
 
-            var user = await _authService.GetUserByUsernameAsync(loginDto.Username);
             var refreshToken = _authService.GenerateRefreshToken();
-
-            await _authRepository.SaveRefreshTokenAsync(user.Id, refreshToken);
 
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddDays(7)
             });
@@ -106,12 +103,12 @@ namespace ExGradoBack.Controllers
             return NoContent();
         }
         [HttpGet("find-username")]
-        public async Task<ActionResult<Auth>> GetUserByUsername([FromQuery] string username)
+        public async Task<ActionResult<List<Auth>>> GetUserByUsername([FromQuery] string username)
         {
             try
             {
-                var user = await _authService.GetUserByUsernameAsync(username);
-                return Ok(user);
+                var users = await _authService.GetUserByUsernameAsync(username);
+                return Ok(users);
             }
             catch (KeyNotFoundException ex)
             {
@@ -152,12 +149,31 @@ namespace ExGradoBack.Controllers
             Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddDays(7)
             });
 
             return Ok(new { token = newAccessToken });
+        }
+        [HttpGet("FindUsers")]
+        public async Task<ActionResult<List<UserDto>>> GetUsersByUsername([FromQuery] string username)
+        {
+            try
+            {
+                var users = await _authRepository.GetUserByUsernameAsync(username);
+
+                if (users == null || users.Count == 0)
+                {
+                    return NotFound($"No se encontraron usuarios con username que contenga '{username}'.");
+                }
+
+                return Ok(users);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

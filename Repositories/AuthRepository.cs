@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 using ExGradoBack.Data;
 using Microsoft.EntityFrameworkCore;
 using ExGradoBack.Repositories;
@@ -75,5 +76,17 @@ public class AuthRepository : IAuthRepository
     {
         return await _context.RefreshToken
             .FirstOrDefaultAsync(r => r.UserId == userId && r.Token == token);
+    }
+    public async Task<List<UserDto>> GetUserByUsernameAsync(string username)
+    {
+        return await _context.Auth
+            .Where(u => u.Username.Contains(username))
+            .Select(u => new UserDto
+            {
+                Id = u.Id,
+                Username = u.Username
+            })
+            .Take(5)
+            .ToListAsync();
     }
 }

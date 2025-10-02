@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 
 namespace ExGradoBack.Repositories
 {
@@ -15,5 +16,6 @@ namespace ExGradoBack.Repositories
         Task<int> CountUsersAsync();
         Task SaveRefreshTokenAsync(int userId, string token);
         Task<RefreshToken?> GetRefreshTokenAsync(int userId, string token);
+        Task<List<UserDto>> GetUserByUsernameAsync(string username);
     }
 }

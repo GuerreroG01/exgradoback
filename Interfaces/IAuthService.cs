@@ -24,5 +24,6 @@ namespace ExGradoBack.Services
         Task<RefreshToken?> GetRefreshTokenAsync(int userId, string token);
         Task<int> GetTotalUsersAsync();
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
+        Task<List<UserDto>> GetByUsernameAsync(string username);
     }
 }

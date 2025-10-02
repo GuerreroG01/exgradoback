@@ -11,7 +11,7 @@ namespace ExGradoBack.Repositories
         Task<IEnumerable<Factura>> GetFacturasPorDiaAsync(int anio, int mes, int dia);
         Task<Factura?> GetFacturaByIdAsync(int id);
         Task<Factura> CreateFacturaAsync(Factura factura);
-        Task<Factura> UpdateFacturaAsync(Factura factura);
+        Task SaveChangesAsync();
         Task<bool> DeleteFacturaAsync(int id);
         Task<bool> FacturaExistsAsync(int id);
         Task<List<(string Vendedor, int TotalVendidos)>> ObtenerTop3VendedoresAsync();

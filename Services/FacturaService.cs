@@ -104,9 +104,21 @@ namespace ExGradoBack.Services
             if (string.IsNullOrWhiteSpace(factura.TipoCliente))
                 throw new ArgumentException("El tipo de cliente es obligatorio.");
 
-            return await _facturaRepository.UpdateFacturaAsync(factura);
-        }
+            var facturaExistente = await _facturaRepository.GetFacturaByIdAsync(factura.Id);
+            if (facturaExistente == null)
+                throw new Exception($"La factura con ID {factura.Id} no existe.");
 
+            facturaExistente.NombresCliente = factura.NombresCliente;
+            facturaExistente.Fecha = factura.Fecha;
+            facturaExistente.Descuento = factura.Descuento;
+            facturaExistente.Total = factura.Total;
+            facturaExistente.TipoCliente = factura.TipoCliente;
+            facturaExistente.Vendedor = factura.Vendedor;
+
+            await _facturaRepository.SaveChangesAsync();
+
+            return facturaExistente;
+        }
         public async Task<bool> DeleteFacturaAsync(int id)
         {
             if (!await _facturaRepository.FacturaExistsAsync(id))

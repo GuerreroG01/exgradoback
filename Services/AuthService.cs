@@ -105,7 +105,7 @@ namespace ExGradoBack.Services
             return new TokenResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = null
+                RefreshToken = refreshToken
             };
         }
 
@@ -243,6 +243,17 @@ namespace ExGradoBack.Services
             {
                 return null;
             }
+        }
+        public async Task<List<UserDto>> GetByUsernameAsync(string username)
+        {
+            var users = await _authRepository.GetUserByUsernameAsync(username);
+
+            if (users == null || users.Count == 0)
+            {
+                throw new KeyNotFoundException($"No se encontraron usuarios con username que contenga '{username}'.");
+            }
+
+            return users;
         }
     }
 }
