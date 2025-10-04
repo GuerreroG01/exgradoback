@@ -71,6 +71,10 @@ namespace ExGradoBack.Services
         {
             return await _actividadRepository.GetActividadByIdAsync(id);
         }
+        public async Task LimpiarActividadesAsync()
+        {
+            await _actividadRepository.LimpiarActividadesAsync();
+        }
     }
 
     public static class DiferenciadorDeCambios

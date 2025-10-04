@@ -17,6 +17,11 @@ namespace ExGradoBack.Repositories
                 .Where(d => d.FacturaId == idFactura)
                 .ToListAsync();
         }
+        public async Task<DetalleFactura?> GetDetalleFacturaByIdAsync(int id)
+        {
+            return await _context.DetalleFactura
+                                .FirstOrDefaultAsync(d => d.Id == id);
+        }
         public async Task<DetalleFactura> CreateDetalleFacturaAsync(DetalleFactura detalle)
         {
             _context.DetalleFactura.Add(detalle);

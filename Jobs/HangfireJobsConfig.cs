@@ -24,6 +24,12 @@ namespace ExGradoBack.Jobs
                 Cron.Daily(14, 00),
                 opcionJob
             );
+            RecurringJob.AddOrUpdate<LimpiezaActividadesJob>(
+                "limpieza-actividades-job",
+                job => job.RunAsync(),
+                Cron.Monthly(day: 1, hour: 12, minute: 0),
+                opcionJob
+            );
         }
     }
 };

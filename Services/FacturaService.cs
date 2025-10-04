@@ -7,10 +7,12 @@ namespace ExGradoBack.Services
     public class FacturaService : IFacturaService
     {
         private readonly IFacturaRepository _facturaRepository;
+        private readonly ILogger<FacturaService> _logger;
 
-        public FacturaService(IFacturaRepository facturaRepository)
+        public FacturaService(IFacturaRepository facturaRepository, ILogger<FacturaService> logger)
         {
             _facturaRepository = facturaRepository;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<int>> GetAniosConFacturasAsync()
@@ -84,6 +86,7 @@ namespace ExGradoBack.Services
 
         public async Task<Factura> CreateFacturaAsync(Factura factura)
         {
+            _logger.LogInformation("Factura dice que se esta creando");
             if (factura.Total <= 0)
                 throw new ArgumentException("El total debe ser mayor a 0.");
 
@@ -95,6 +98,7 @@ namespace ExGradoBack.Services
 
         public async Task<Factura> UpdateFacturaAsync(Factura factura)
         {
+            _logger.LogInformation("Estamos Actualizando desde factura");
             if (!await _facturaRepository.FacturaExistsAsync(factura.Id))
                 throw new Exception($"La factura con ID {factura.Id} no existe.");
 

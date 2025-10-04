@@ -46,7 +46,7 @@ namespace ExGradoBack.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<ActionResult<DetalleFactura>> UpdateDetalle(int id, [FromBody] DetalleFactura detalle)
         {
             if (id != detalle.Id)

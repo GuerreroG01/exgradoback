@@ -5,6 +5,7 @@ namespace ExGradoBack.Repositories
     public interface IDetalleFacturaRepository
     {
         Task<List<DetalleFactura>> GetDetalleFacturaByIdFacturaAsync(int idFactura);
+        Task<DetalleFactura?> GetDetalleFacturaByIdAsync(int id);
         Task<DetalleFactura> CreateDetalleFacturaAsync(DetalleFactura detalle);
         Task<DetalleFactura> UpdateDetalleFacturaAsync(DetalleFactura Detalle);
         Task<bool> DeleteDetalleFacturaAsync(int id);

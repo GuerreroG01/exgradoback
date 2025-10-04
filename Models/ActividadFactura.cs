@@ -15,7 +15,7 @@ namespace ExGradoBack.Models
         [Required]
         public string Accion { get; set; } = null!;
 
-        public DateTime Fecha { get; set; } = DateTime.UtcNow;
+        public DateTime Fecha { get; set; } = DateTime.UtcNow.AddHours(-6);
 
         public string? DatosAntes { get; set; }
 

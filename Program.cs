@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -120,7 +121,7 @@ namespace ExGradoBack
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
-            builder.Logging.AddSerilog();
+            builder.Host.UseSerilog();
             //builder.Logging.ClearProviders();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

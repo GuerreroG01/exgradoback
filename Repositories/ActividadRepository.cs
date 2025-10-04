@@ -73,5 +73,28 @@ namespace ExGradoBack.Repositories
         {
             return await _context.ActividadFactura.FindAsync(id);
         }
+        public async Task LimpiarActividadesAsync()
+        {
+            var usuarios = await _context.ActividadFactura
+                .Select(a => a.Usuario)
+                .Distinct()
+                .ToListAsync();
+
+            foreach (var usuario in usuarios)
+            {
+                var fechaMaxima = await _context.ActividadFactura
+                    .Where(a => a.Usuario == usuario)
+                    .MaxAsync(a => (DateTime?)a.Fecha);
+
+                if (fechaMaxima == null)
+                    continue;
+
+                var fechaCorteUsuario = fechaMaxima.Value.AddYears(-1);
+
+                await _context.ActividadFactura
+                    .Where(a => a.Usuario == usuario && a.Fecha < fechaCorteUsuario)
+                    .ExecuteDeleteAsync();
+            }
+        }
     }
 }
