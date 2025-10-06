@@ -119,6 +119,7 @@ namespace ExGradoBack
                 //.MinimumLevel.Debug()
                 //.Enrich.FromLogContext()
                 .WriteTo.File("Logs/myapp.log", rollingInterval: RollingInterval.Day)
+                //.WriteTo.Console()
                 .CreateLogger();
 
             builder.Host.UseSerilog();

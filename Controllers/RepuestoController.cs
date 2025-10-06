@@ -3,8 +3,10 @@ using ExGradoBack.Services;
 using ExGradoBack.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 namespace ExGradoBack.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class RepuestoController : ControllerBase

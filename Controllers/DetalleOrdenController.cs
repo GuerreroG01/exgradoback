@@ -1,9 +1,11 @@
 using ExGradoBack.Models;
 using ExGradoBack.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExGradoBack.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DetalleOrdenController : ControllerBase

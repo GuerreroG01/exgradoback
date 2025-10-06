@@ -164,7 +164,7 @@ namespace ExGradoBack.Services
 
         public string GenerateJwtToken(Auth admin)
         {
-            DateTime expiresAt = DateTime.UtcNow.AddMinutes(60);
+            DateTime expiresAt = DateTime.UtcNow.AddDays(30);
             long expiresAtUnix = new DateTimeOffset(expiresAt).ToUnixTimeSeconds();
 
             var claims = new[]
