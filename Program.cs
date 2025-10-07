@@ -9,6 +9,7 @@ using dotenv.net;
 using ExGradoBack.Data;
 using ExGradoBack.Repositories;
 using ExGradoBack.Services;
+using ExGradoBack.Hubs;
 using Hangfire;
 using Hangfire.MySql;
 using Microsoft.OpenApi.Models;
@@ -145,14 +146,17 @@ namespace ExGradoBack
                 });
 
             builder.Services.AddAuthorization();
+            builder.Services.AddSignalR();
             var app = builder.Build();
 
+            app.MapHub<StockHub>("/stockHub");
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
+            
             
             app.UseHttpsRedirection();
             app.UseCors("AllowLocalNetwork");

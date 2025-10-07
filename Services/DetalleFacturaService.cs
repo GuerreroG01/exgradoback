@@ -1,5 +1,7 @@
 using ExGradoBack.Models;
 using ExGradoBack.Repositories;
+using ExGradoBack.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ExGradoBack.Services
 {
@@ -9,12 +11,14 @@ namespace ExGradoBack.Services
         private readonly IFacturaRepository _facturaRepository;
         private readonly IRepuestoRepository _repuestoRepository;
         private readonly ILogger<DetalleFacturaService> _logger;
-        public DetalleFacturaService(IDetalleFacturaRepository detalleFacturaRepository, IFacturaRepository facturaRepository, IRepuestoRepository repuestoRepository, ILogger<DetalleFacturaService> logger)
+        private readonly IHubContext<StockHub> _hubContext;
+        public DetalleFacturaService(IDetalleFacturaRepository detalleFacturaRepository, IFacturaRepository facturaRepository, IRepuestoRepository repuestoRepository, ILogger<DetalleFacturaService> logger, IHubContext<StockHub> hubContext)
         {
             _detalleFacturaRepository = detalleFacturaRepository;
             _facturaRepository = facturaRepository;
             _repuestoRepository = repuestoRepository;
             _logger = logger;
+            _hubContext = hubContext;
         }
         public async Task<List<DetalleFactura>?> GetDetalleFacturaByIdFacturaAsync(int facturaId)
         {
@@ -45,6 +49,12 @@ namespace ExGradoBack.Services
             repuesto.StockActual -= detalle.Cantidad;
 
             await _repuestoRepository.UpdateRepuestoAsync(repuesto);
+
+            await _hubContext.Clients.All.SendAsync("ActualizarStock", new
+            {
+                id = repuesto.Id,
+                nuevoStock = repuesto.StockActual
+            });
 
             return await _detalleFacturaRepository.CreateDetalleFacturaAsync(detalle);
         }
@@ -92,6 +102,12 @@ namespace ExGradoBack.Services
                     throw new Exception("No hay suficiente stock para realizar esta modificación");
 
                 await _repuestoRepository.UpdateRepuestoAsync(repuesto);
+
+                await _hubContext.Clients.All.SendAsync("ActualizarStock", new
+                {
+                    id = repuesto.Id,
+                    nuevoStock = repuesto.StockActual
+                });
 
                 detalleOriginal.Cantidad = detalle.Cantidad;
                 detalleOriginal.PrecioUnitario = detalle.PrecioUnitario;
