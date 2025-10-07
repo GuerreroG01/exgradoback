@@ -5,5 +5,7 @@ namespace ExGradoBack.DTOs
         public DateTime Fecha { get; set; }
         public int Pendientes { get; set; }
         public int Enviados { get; set; }
+        public int Entregado { get; set; }
+        public int Inventario { get; set; }
     }
 }

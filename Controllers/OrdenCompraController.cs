@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ExGradoBack.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrdenCompraController : ControllerBase

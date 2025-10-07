@@ -91,7 +91,9 @@ namespace ExGradoBack.Repositories
                 {
                     Fecha = g.Key,
                     Pendientes = g.Count(o => o.Estado == "Pendiente"),
-                    Enviados = g.Count(o => o.Estado == "Enviado")
+                    Enviados = g.Count(o => o.Estado == "Enviado"),
+                    Entregado = g.Count(o => o.Estado == "Entregado"),
+                    Inventario = g.Count(o => o.Estado == "Inventario")
                 })
                 .FirstOrDefaultAsync();
 
