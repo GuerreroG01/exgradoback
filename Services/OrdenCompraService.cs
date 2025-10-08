@@ -135,5 +135,16 @@ namespace ExGradoBack.Services
         {
             return await _repository.GetResumenOrdenesPorFechaAsync(fecha);
         }
+        public async Task<List<OrdenCompraDto>> GetOrdenesEntregadasAsync()
+        {
+            var ordenes = await _repository.GetOrdenesEntregadasAsync();
+
+            if (ordenes == null || !ordenes.Any())
+            {
+                throw new InvalidOperationException("No se encontraron órdenes de compra con estado 'Entregado'.");
+            }
+
+            return ordenes;
+        }
     }
 }

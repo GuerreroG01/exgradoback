@@ -117,5 +117,32 @@ namespace ExGradoBack.Services
         {
             return await _repuestoRepository.GetAllUbicacionesAsync();
         }
+        public async Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMayorStockAsync()
+        {
+            var repuestos = await _repuestoRepository.GetTop10RepuestosMayorStockAsync();
+
+            if (!repuestos.Any())
+                throw new InvalidOperationException("No se encontraron repuestos con stock.");
+
+            return repuestos;
+        }
+        public async Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMenorStockAsync()
+        {
+            var repuestos = await _repuestoRepository.GetTop10RepuestosMenorStockAsync();
+
+            if (!repuestos.Any())
+                throw new InvalidOperationException("No se encontraron repuestos con stock bajo.");
+
+            return repuestos;
+        }
+        public async Task<IEnumerable<RepuestoReabastecimientoDto>> GetRepuestosSinStockAsync()
+        {
+            var repuestos = await _repuestoRepository.GetRepuestosSinStockAsync();
+
+            if (!repuestos.Any())
+                throw new InvalidOperationException("No hay repuestos que requieran reabastecimiento.");
+
+            return repuestos;
+        }
     }
 }

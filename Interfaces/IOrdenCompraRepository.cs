@@ -15,5 +15,6 @@ namespace ExGradoBack.Repositories
         Task<bool> OrdenExistsAsync(int id);
         Task<List<OrdenCompra>> GetOrdenesPendientesAsync();
         Task<OrdenCompraResumenDTO?> GetResumenOrdenesPorFechaAsync(DateTime fecha);
+        Task<List<OrdenCompraDto>> GetOrdenesEntregadasAsync();
     }
 }

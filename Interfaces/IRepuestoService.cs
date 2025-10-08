@@ -12,5 +12,8 @@ namespace ExGradoBack.Services
         Task<bool> DeleteRepuestoAsync(int id);
         Task<bool> RepuestoExistsAsync(int id);
         Task<IEnumerable<string>> GetAllUbicacionesAsync();
+        Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMayorStockAsync();
+        Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMenorStockAsync();
+        Task<IEnumerable<RepuestoReabastecimientoDto>> GetRepuestosSinStockAsync();
     }
 }

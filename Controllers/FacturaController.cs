@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace ExGradoBack.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FacturaController : ControllerBase

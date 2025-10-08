@@ -99,5 +99,18 @@ namespace ExGradoBack.Repositories
 
             return resumen;
         }
+        public async Task<List<OrdenCompraDto>> GetOrdenesEntregadasAsync()
+        {
+            return await _context.OrdenCompra
+                .Where(o => o.Estado == "Entregado")
+                .Select(o => new OrdenCompraDto
+                {
+                    Id = o.Id,
+                    Fecha = o.Fecha,
+                    Estado = o.Estado,
+                    ProveedorId = o.ProveedorId
+                })
+                .ToListAsync();
+        }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ExGradoBack.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrdenCompraController : ControllerBase
@@ -188,6 +188,23 @@ namespace ExGradoBack.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+        [HttpGet("entregadas")]
+        public async Task<IActionResult> GetOrdenesEntregadas()
+        {
+            try
+            {
+                var ordenes = await _ordenService.GetOrdenesEntregadasAsync();
+                return Ok(ordenes);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor." });
             }
         }
     }

@@ -13,4 +13,17 @@ namespace ExGradoBack.DTOs
         public int MarcaRepuestoId { get; set; }
         public List<int> VehiculoInfoIds { get; set; } = new();
     }
+    public class RepuestoStockDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public int StockActual { get; set; }
+    }
+    public class RepuestoReabastecimientoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public int StockActual { get; set; }
+        public DateTime? FechaAbastecimiento { get; set; }
+    }
 }

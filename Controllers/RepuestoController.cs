@@ -95,5 +95,59 @@ namespace ExGradoBack.Controllers
             var ubicaciones = await _repuestoService.GetAllUbicacionesAsync();
             return Ok(ubicaciones);
         }
+
+        [HttpGet("top-stock")]
+        public async Task<IActionResult> GetTop10RepuestosMayorStock()
+        {
+            try
+            {
+                var repuestos = await _repuestoService.GetTop10RepuestosMayorStockAsync();
+                return Ok(repuestos);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
+        }
+
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> GetTop10RepuestosMenorStock()
+        {
+            try
+            {
+                var repuestos = await _repuestoService.GetTop10RepuestosMenorStockAsync();
+                return Ok(repuestos);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
+        }
+
+        [HttpGet("sin-stock")]
+        public async Task<IActionResult> GetRepuestosSinStock()
+        {
+            try
+            {
+                var repuestos = await _repuestoService.GetRepuestosSinStockAsync();
+                return Ok(repuestos);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
+        }
     }
 }

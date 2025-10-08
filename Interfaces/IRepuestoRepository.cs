@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 namespace ExGradoBack.Repositories
 {
     public interface IRepuestoRepository
@@ -11,5 +12,8 @@ namespace ExGradoBack.Repositories
         Task<bool> DeleteRepuestoAsync(int id);
         Task<bool> RepuestoExistsAsync(int id);
         Task<IEnumerable<string>> GetAllUbicacionesAsync();
+        Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMayorStockAsync();
+        Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMenorStockAsync();
+        Task<IEnumerable<RepuestoReabastecimientoDto>> GetRepuestosSinStockAsync();
     }
 }

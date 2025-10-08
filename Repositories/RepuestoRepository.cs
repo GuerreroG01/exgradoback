@@ -1,4 +1,5 @@
 using ExGradoBack.Models;
+using ExGradoBack.DTOs;
 using ExGradoBack.Data;
 using Microsoft.EntityFrameworkCore;
 namespace ExGradoBack.Repositories
@@ -68,6 +69,46 @@ namespace ExGradoBack.Repositories
                                 .Select(r => r.Ubicacion)
                                 .Distinct()
                                 .ToListAsync();
+        }
+        public async Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMayorStockAsync()
+        {
+            return await _context.Repuesto
+                .OrderByDescending(r => r.StockActual)
+                .Take(10)
+                .Select(r => new RepuestoStockDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    StockActual = r.StockActual
+                })
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMenorStockAsync()
+        {
+            return await _context.Repuesto
+                .Where(r => r.StockActual > 0)
+                .OrderBy(r => r.StockActual)
+                .Take(10)
+                .Select(r => new RepuestoStockDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    StockActual = r.StockActual
+                })
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<RepuestoReabastecimientoDto>> GetRepuestosSinStockAsync()
+        {
+            return await _context.Repuesto
+                .Where(r => r.StockActual == 0)
+                .Select(r => new RepuestoReabastecimientoDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    StockActual = r.StockActual,
+                    FechaAbastecimiento = r.FechaAbastecimiento
+                })
+                .ToListAsync();
         }
     }
 }
