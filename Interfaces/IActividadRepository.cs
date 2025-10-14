@@ -9,5 +9,6 @@ namespace ExGradoBack.Repositories
         Task<List<ActividadResumenDto>> ObtenerActividadesAsync(string usuario, string? accion = null, int? meses = null);
         Task<ActividadFactura?> GetActividadByIdAsync(int id);
         Task LimpiarActividadesAsync();
+        Task<List<ActividadEmpleadosDto>> ObtenerActividadEmpleadosAsync();
     }
 }

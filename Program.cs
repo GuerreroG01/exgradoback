@@ -16,6 +16,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using OfficeOpenXml;
 
 namespace ExGradoBack
 {
@@ -24,6 +25,7 @@ namespace ExGradoBack
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            ExcelPackage.License.SetNonCommercialPersonal("ExGradoApp");
             DotEnv.Load();
 
             var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "undefined";
@@ -105,6 +107,8 @@ namespace ExGradoBack
             builder.Services.AddScoped<IDetalleOrdenService, DetalleOrdenService>();
             builder.Services.AddScoped<IActividadService, ActividadService>();
             builder.Services.AddScoped<IActividadRepository, ActividadRepository>();
+            builder.Services.AddScoped<IReportService, ReportService>();
+            builder.Services.AddScoped<IExportExcellService, ExportExcellService>();
             builder.Services.AddScoped<IEmailService>(sp =>
             new EmailService(
                 Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com",
@@ -156,7 +160,6 @@ namespace ExGradoBack
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
-            
             
             app.UseHttpsRedirection();
             app.UseCors("AllowLocalNetwork");

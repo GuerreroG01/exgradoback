@@ -110,5 +110,44 @@ namespace ExGradoBack.Repositories
                 })
                 .ToListAsync();
         }
+        public async Task<IEnumerable<RepuestosAReabastecerDto>> GetRepuestosPorDebajoDelStockMinimoAsync()
+        {
+            return await _context.Repuesto
+                .Where(r => r.StockActual <= r.StockMinimo)
+                .Select(r => new RepuestosAReabastecerDto
+                {
+                    Id = r.Id,
+                    Nombre = r.Nombre,
+                    StockActual = r.StockActual,
+                    StockMinimo = r.StockMinimo,
+                    FechaAbastecimiento = r.FechaAbastecimiento
+                })
+                .ToListAsync();
+        }
+        public async Task<List<RepuestosMasVendidosDto>> GetRepuestosMasVendidos(int top)
+        {
+            var mejoresRepuestos = await _context.DetalleFactura
+                .Include(d => d.Repuesto)
+                .GroupBy(d => new
+                {
+                    d.RepuestoId,
+                    d.Repuesto!.Nombre,
+                    d.Repuesto.PrecioUnitario,
+                    d.Repuesto.PrecioProveedor
+                })
+                .Select(g => new RepuestosMasVendidosDto
+                {
+                    RepuestoId = g.Key.RepuestoId,
+                    Nombre = g.Key.Nombre,
+                    CantidadVendida = g.Sum(d => d.Cantidad),
+                    Precio = g.Key.PrecioUnitario,
+                    PrecioProveedor = g.Key.PrecioProveedor
+                })
+                .OrderByDescending(r => r.CantidadVendida)
+                .Take(top)
+                .ToListAsync();
+
+            return mejoresRepuestos;
+        }
     }
 }

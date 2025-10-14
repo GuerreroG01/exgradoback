@@ -24,6 +24,6 @@ namespace ExGradoBack.Models
         public required string Estado { get; set; }
         public required string Solicitante { get; set; }
 
-        public virtual ICollection<DetalleOrdenCompra>? Detalles { get; set; } = new List<DetalleOrdenCompra>();
+        public ICollection<DetalleOrdenCompra> Detalles { get; set; } = new List<DetalleOrdenCompra>();
     }
 }

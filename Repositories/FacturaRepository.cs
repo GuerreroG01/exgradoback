@@ -179,5 +179,54 @@ namespace ExGradoBack.Repositories
 
             return detallePorDia;
         }
+        public async Task<List<FacturaReporteDto>> ObtenerReporteMensualAsync(int anio, int mes)
+        {
+            return await _context.Factura
+                .Where(f => f.Fecha.Year == anio && f.Fecha.Month == mes)
+                .Include(f => f.Detalles)
+                    .ThenInclude(d => d.Repuesto)
+                .Select(f => new FacturaReporteDto
+                {
+                    FacturaId = f.Id,
+                    Fecha = f.Fecha,
+                    Cliente = f.NombresCliente ?? "Cliente no registrado",
+                    Vendedor = f.Vendedor,
+                    Descuento = f.Descuento,
+                    Total = f.Total,
+                    Detalles = f.Detalles.Select(d => new DetalleFacturaReporteDto
+                    {
+                        Repuesto = d.Repuesto != null ? d.Repuesto.Nombre : "N/A",
+                        Cantidad = d.Cantidad,
+                        PrecioUnitario = d.PrecioUnitario,
+                        Subtotal = d.Subtotal
+                    }).ToList()
+                })
+                .ToListAsync();
+        }
+        public async Task<List<TipoClienteReporteDto>> ObtenerReportePorTipoClienteAsync()
+        {
+            var facturas = await _context.Factura
+                .Include(f => f.Detalles)
+                .ToListAsync();
+
+            var totalGeneral = facturas.Sum(f => f.Total);
+
+            var reporte = facturas
+                .GroupBy(f => f.TipoCliente)
+                .Select(g => new TipoClienteReporteDto
+                {
+                    TipoCliente = g.Key,
+                    CantidadFacturas = g.Count(),
+                    CantidadRepuestosComprados = g.Sum(f => f.Detalles.Sum(d => d.Cantidad)),
+                    TotalIngresos = g.Sum(f => f.Total),
+                    PorcentajeParticipacion = totalGeneral == 0 
+                        ? 0 
+                        : Math.Round((double)(g.Sum(f => f.Total) / totalGeneral) * 100, 2)
+                })
+                .OrderByDescending(r => r.TotalIngresos)
+                .ToList();
+
+            return reporte;
+        }
     }
 }

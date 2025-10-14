@@ -96,5 +96,19 @@ namespace ExGradoBack.Repositories
                     .ExecuteDeleteAsync();
             }
         }
+        public async Task<List<ActividadEmpleadosDto>> ObtenerActividadEmpleadosAsync()
+        {
+            var actividades = await _context.ActividadFactura
+                .GroupBy(a => new { a.Usuario, a.Accion })
+                .Select(g => new ActividadEmpleadosDto
+                {
+                    NombreEmpleado = g.Key.Usuario,
+                    Accion = g.Key.Accion,
+                    Movimientos = g.Count()
+                })
+                .ToListAsync();
+
+            return actividades;
+        }
     }
 }

@@ -112,5 +112,29 @@ namespace ExGradoBack.Repositories
                 })
                 .ToListAsync();
         }
+        public async Task<List<OrdenCompraReportDto>> ObtenerHistorialProveedorAsync(int proveedorId)
+        {
+            var ordenes = await _context.OrdenCompra
+                .Where(o => o.ProveedorId == proveedorId)
+                .Include(o => o.Proveedor)
+                .Include(o => o.Detalles)
+                    .ThenInclude(r => r.Repuesto)
+                .ToListAsync();
+
+            return ordenes.Select(o => new OrdenCompraReportDto
+            {
+                OrdenId = o.Id,
+                Fecha = o.Fecha,
+                ProveedorNombre = o.Proveedor?.Nombre ?? "Proveedor desconocido",
+                Solicitante = o.Solicitante,
+                DetallesOrden = o.Detalles.Select(d => new DetalleOrdenDto
+                {
+                    Repuesto = d.Repuesto != null ? d.Repuesto.Nombre : "N/A",
+                    Cantidad = d.Cantidad,
+                    PrecioUnitario = d.PrecioProveedor,
+                    Subtotal = d.Subtotal
+                }).ToList()
+            }).ToList();
+        }
     }
 }

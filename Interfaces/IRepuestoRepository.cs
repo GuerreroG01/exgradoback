@@ -15,5 +15,7 @@ namespace ExGradoBack.Repositories
         Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMayorStockAsync();
         Task<IEnumerable<RepuestoStockDto>> GetTop10RepuestosMenorStockAsync();
         Task<IEnumerable<RepuestoReabastecimientoDto>> GetRepuestosSinStockAsync();
+        Task<IEnumerable<RepuestosAReabastecerDto>> GetRepuestosPorDebajoDelStockMinimoAsync();
+        Task<List<RepuestosMasVendidosDto>> GetRepuestosMasVendidos(int top);
     }
 }

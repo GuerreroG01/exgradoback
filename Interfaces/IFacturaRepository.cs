@@ -19,5 +19,7 @@ namespace ExGradoBack.Repositories
         Task<List<FacturasPorBloqueDto>> ObtenerFacturasPorBloqueAsync();
         Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadFacturasPorDiaUltimaSemanaAsync();
         Task<Dictionary<DateTime, DatosPorDiaDto>> GetCantidadRepuestosVendidosPorDiaUltimaSemanaAsync();
+        Task<List<FacturaReporteDto>> ObtenerReporteMensualAsync(int anio, int mes);
+        Task<List<TipoClienteReporteDto>> ObtenerReportePorTipoClienteAsync();
     }
 }
