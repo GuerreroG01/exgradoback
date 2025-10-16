@@ -574,7 +574,7 @@ namespace ExGradoBack.Services
                     worksheet.Cells[row, 2].Value = act.Accion;
                     worksheet.Cells[row, 3].Value = act.Movimientos;
 
-                    for (int col = 1; col <= 4; col++)
+                    for (int col = 1; col <= 3; col++)
                     {
                         worksheet.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         worksheet.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
