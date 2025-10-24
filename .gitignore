@@ -4,5 +4,5 @@ obj
 .env
 Logs
 Backups
-wwwroot
+wwwroot/vehiculoReference_photos
 Migrations
