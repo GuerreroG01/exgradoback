@@ -132,7 +132,6 @@ namespace ExGradoBack.Repositories
             }
         }
 
-        /*Metodo funcional sin docker
         public async Task<(bool Success, string Message)> RestoreBackupAsync(string backupFilePath)
         {
             try
@@ -174,59 +173,6 @@ namespace ExGradoBack.Repositories
                 {
                     return (false, $"Error al restaurar el backup: {stdError}");
                 }
-            }
-            catch (Exception ex)
-            {
-                return (false, $"Error al restaurar el respaldo: {ex.Message}");
-            }
-        }*/
-
-        //Metodo funcional con docker
-        public async Task<(bool Success, string Message)> RestoreBackupAsync(string backupFilePath)
-        {
-            if (!File.Exists(backupFilePath))
-                return (false, "El archivo de respaldo no existe.");
-
-            try
-            {
-                // Creamos un archivo temporal con instrucciones para deshabilitar constraints, ejecutar el backup y reactivarlas
-                string tempSqlFile = Path.Combine(Path.GetTempPath(), $"restore_{Guid.NewGuid()}.sql");
-
-                // Construimos el contenido del archivo temporal
-                string sqlContent = $@"
-                    SET FOREIGN_KEY_CHECKS=0;
-                    SET UNIQUE_CHECKS=0;
-                    SOURCE {backupFilePath};
-                    SET FOREIGN_KEY_CHECKS=1;
-                    SET UNIQUE_CHECKS=1;
-                    ";
-
-                await File.WriteAllTextAsync(tempSqlFile, sqlContent);
-
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"mysql -h {dbHost} -u{dbUser} -p{dbPassword} {dbName} < {tempSqlFile}\"",
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using var process = new Process { StartInfo = psi };
-                process.Start();
-
-                string stdOutput = await process.StandardOutput.ReadToEndAsync();
-                string stdError = await process.StandardError.ReadToEndAsync();
-                await process.WaitForExitAsync();
-
-                // Eliminamos el archivo temporal
-                File.Delete(tempSqlFile);
-
-                if (process.ExitCode == 0)
-                    return (true, "Copia de seguridad restaurada exitosamente.");
-                else
-                    return (false, $"Error al restaurar el backup: {stdError}");
             }
             catch (Exception ex)
             {
