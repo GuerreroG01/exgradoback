@@ -61,8 +61,9 @@ namespace ExGradoBack.Controllers
             {
                 HttpOnly = true,
                 Secure = false,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7)
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Path = "/"
             });
 
             return Ok(new { token = token.AccessToken });

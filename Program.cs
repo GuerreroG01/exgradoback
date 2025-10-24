@@ -25,6 +25,10 @@ namespace ExGradoBack
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(5140);
+            });
             ExcelPackage.License.SetNonCommercialPersonal("ExGradoApp");
             DotEnv.Load();
 
@@ -152,6 +156,13 @@ namespace ExGradoBack
             builder.Services.AddAuthorization();
             builder.Services.AddSignalR();
             var app = builder.Build();
+
+            // Aplica migraciones pendientes al iniciar la aplicación
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
 
             app.MapHub<StockHub>("/stockHub");
             if (app.Environment.IsDevelopment())
