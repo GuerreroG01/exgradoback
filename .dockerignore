@@ -1,0 +1,28 @@
+# Archivos de usuario y sistema
+*.user
+*.suo
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Salidas de compilación
+bin/
+obj/
+out/
+
+# Configuración de IDEs
+.vscode/
+.idea/
+
+# Archivos de publicación
+/app/publish/
+
+# Git y control de versiones
+.git/
+.gitignore
+
+# Otros
+*.log
+*.tmp
+*.cache
