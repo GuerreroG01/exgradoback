@@ -34,7 +34,7 @@ namespace ExGradoBack.Services
         public async Task<Repuesto> CreateRepuestoAsync(RepuestoDto repuestoDto)
         {
             if (repuestoDto.MarcaRepuestoId <= 0)
-                throw new ValidationException("ID de marca de repuesto inválido.");
+                throw new ValidationException("Marca seleccionada inválida o vacia");
 
             if (repuestoDto.VehiculoInfoIds == null || !repuestoDto.VehiculoInfoIds.Any())
                 throw new ValidationException("Debe especificar al menos un vehículo compatible.");

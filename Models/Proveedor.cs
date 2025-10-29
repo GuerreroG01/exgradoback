@@ -9,30 +9,33 @@ namespace ExGradoBack.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El campo Nombre es obligatorio.")]
         [StringLength(100)]
         public required string Nombre { get; set; }
 
-        [StringLength(20)]
+        [StringLength(20, ErrorMessage = "El Documento no puede tener más de 20 caracteres.")]
         //Número ruc o número de cédula jurídica fiscal. 
         public string? Documento { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El campo del nombre de contacto es obligatorio.")]
         [StringLength(100)]
         public required string NombreContacto { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El campo Teléfono es obligatorio.")]
         [StringLength(100)]
         public string Telefono { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "El campo Email es obligatorio.")]
         [StringLength(100)]
-        public string? Email { get; set; }
+        public required string Email { get; set; }
 
+        [Required(ErrorMessage = "El campo del Pais es obligatorio.")]
         [StringLength(30)]
-        public string? Pais { get; set; }
+        public required string Pais { get; set; }
 
+        [Required(ErrorMessage = "El campo del ciudad es obligatorio.")]
         [StringLength(30)]
-        public string? Ciudad { get; set; }
+        public required string Ciudad { get; set; }
 
         [StringLength(200)]
         public string? Direccion { get; set; }

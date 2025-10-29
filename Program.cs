@@ -177,6 +177,11 @@ namespace ExGradoBack
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseHangfireDashboard();
+            var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            if (!Directory.Exists(wwwrootPath))
+            {
+                Directory.CreateDirectory(wwwrootPath);
+            }
             app.UseStaticFiles(); //Servir archivos estáticos en wwwroot
             ExGradoBack.Jobs.HangfireJobsConfig.ConfigurateJobs();
             app.MapControllers();

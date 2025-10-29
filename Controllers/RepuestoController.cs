@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 namespace ExGradoBack.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class RepuestoController : ControllerBase
@@ -48,15 +48,27 @@ namespace ExGradoBack.Controllers
             }
             catch (ValidationException valEx)
             {
-                return BadRequest(valEx.Message);
+                return BadRequest(new
+                {
+                    type = "ValidationError",
+                    message = valEx.Message
+                });
             }
             catch (KeyNotFoundException knfEx)
             {
-                return NotFound(knfEx.Message);
+                return NotFound(new
+                {
+                    type = "NotFound",
+                    message = knfEx.Message
+                });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Error interno del servidor");
+            #if DEBUG
+                return StatusCode(500, new { type = "ServerError", message = ex.Message, stackTrace = ex.StackTrace });
+            #else
+                return StatusCode(500, new { type = "ServerError", message = "Error interno del servidor" });
+            #endif
             }
         }
 
@@ -68,17 +80,29 @@ namespace ExGradoBack.Controllers
                 var repuestoActualizado = await _repuestoService.UpdateRepuestoAsync(id, dto);
                 return Ok(repuestoActualizado);
             }
-            catch (KeyNotFoundException knfEx)
-            {
-                return NotFound(knfEx.Message);
-            }
             catch (ValidationException valEx)
             {
-                return BadRequest(valEx.Message);
+                return BadRequest(new
+                {
+                    type = "ValidationError",
+                    message = valEx.Message
+                });
             }
-            catch (Exception)
+            catch (KeyNotFoundException knfEx)
             {
-                return StatusCode(500, "Error interno del servidor");
+                return NotFound(new
+                {
+                    type = "NotFound",
+                    message = knfEx.Message
+                });
+            }
+            catch (Exception ex)
+            {
+            #if DEBUG
+                return StatusCode(500, new { type = "ServerError", message = ex.Message, stackTrace = ex.StackTrace });
+            #else
+                return StatusCode(500, new { type = "ServerError", message = "Error interno del servidor" });
+            #endif
             }
         }
 

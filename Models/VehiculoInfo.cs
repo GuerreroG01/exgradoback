@@ -19,7 +19,7 @@ namespace ExGradoBack.Models
         [StringLength(50)]
         public required string Modelo { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Se debe ingresar un año.")]
         public int Anio { get; set; }
         public string? FotoReferencia { get; set; }
         [Required(ErrorMessage = "Se debe ingresar un tipo de motor.")]

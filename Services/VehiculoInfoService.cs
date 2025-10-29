@@ -83,6 +83,7 @@ namespace ExGradoBack.Services
             
             if (fotoReferencia != null)
             {
+                ReCreaciondeDirectorio();
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(fotoReferencia.FileName);
                 var fullPath = Path.Combine(imagePath, fileName);
 
@@ -112,6 +113,7 @@ namespace ExGradoBack.Services
             {
                 if (fotoReferencia != null)
                 {
+                    ReCreaciondeDirectorio();
                     var newFileName = Guid.NewGuid().ToString() + Path.GetExtension(fotoReferencia.FileName);
                     var fullPath = Path.Combine(imagePath, newFileName);
 
@@ -166,6 +168,22 @@ namespace ExGradoBack.Services
                 throw new InvalidOperationException("No se encontraron años de vehículos para la marca especificada.");
             }
             return resultado;
+        }
+        //Por si no existiera el directorio de fotos
+        private void ReCreaciondeDirectorio()
+        {
+            try
+            {
+                if (!Directory.Exists(_imageReferencePath))
+                {
+                    Directory.CreateDirectory(_imageReferencePath);
+                    Console.WriteLine($"[INFO] Directorio de fotos creado en: {_imageReferencePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] No se pudo crear el directorio de fotos: {ex.Message}");
+            }
         }
     }
 }
