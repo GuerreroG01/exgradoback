@@ -17,27 +17,27 @@ namespace ExGradoBack.Models
         [JsonIgnore]
         public Auth? Auth { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Los nombres son obligatorios.")]
         [StringLength(100)]
         public required string Nombres { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Los apellidos son obligatorios.")]
         [StringLength(100)]
         public required string Apellidos { get; set; }
 
         public string? FotoPerfil { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El email es obligatorio.")]
         [EmailAddress]
         public required string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La fecha de nacimiento es obligatorio.")]
         public DateTime Nacimiento { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Se debe ingresar un género.")]
         public required string Genero { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Ingrese un número de teléfono.")]
         public required string Telefono { get; set; }
     }
 }
