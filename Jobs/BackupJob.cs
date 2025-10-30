@@ -28,22 +28,33 @@ namespace ExGradoBack.Jobs
                 _logger.LogError("No se encontró la configuración de respaldo.");
                 throw new Exception("No se encontró la configuración de respaldo.");
             }
+            var proximoRespaldo = CalcularProximoRespaldo(
+                backupConfig.Frecuencia_Respaldo,
+                backupConfig.Fecha_RespaldoAnterior ?? DateTime.Now
+            );
             if (backupConfig.Activo)
             {
                 try
                 {
-                    await EjecutarBackup();
+                    if (DateTime.Now < proximoRespaldo)
+                    {
+                        _logger.LogInformation($"Aún no corresponde ejecutar el backup. Próximo: {proximoRespaldo:yyyy-MM-dd}");
+                        return;
+                    } else
+                    {
+                        await EjecutarBackup();   
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error al ejecutar el backup.");
-                    throw new Exception($"Error al ejecutar el backup: {ex.Message}", ex);
+                    return;
                 }
             }
             else
             {
                 _logger.LogInformation("El backup está deshabilitado en la configuración.");
-                throw new Exception("El backup está deshabilitado en la configuración.");
+                return;
             }
         }
         private DateTime? CalcularProximoRespaldo(string frecuencia, DateTime fechaAnterior)
