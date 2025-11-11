@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExGradoBack.Models
@@ -13,6 +14,7 @@ namespace ExGradoBack.Models
         public int FacturaId { get; set; }
 
         [ForeignKey("FacturaId")]
+        [JsonIgnore]
         public virtual Factura? Factura { get; set; } = null!;
 
         [Required]

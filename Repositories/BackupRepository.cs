@@ -4,6 +4,7 @@ using ExGradoBack.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using System.Text;
 using MySqlConnector;
 using dotenv.net;
 
@@ -17,6 +18,8 @@ namespace ExGradoBack.Repositories
         private string dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "undefined";
         private string dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "undefined";
         private string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+        private string userRoot = Environment.GetEnvironmentVariable("root") ?? "undefined";
+        private string rootPassword = Environment.GetEnvironmentVariable("MYSQL_ROOT_PASSWORD") ?? "";
         public BackupRepository(AppDbContext context, ILogger<BackupRepository> logger)
         {
             _context = context;
@@ -101,10 +104,12 @@ namespace ExGradoBack.Repositories
             {
                 string fileName = $"ExGradoBackup_{DateTime.Now:yyyyMMddHHmmss}.sql";
 
+                string command = $"mysqldump -h {dbHost} -u {userRoot} -p{rootPassword} --no-tablespaces {dbName}";
+
                 var psi = new ProcessStartInfo
                 {
                     FileName = "mysqldump",
-                    Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName}",
+                    Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} --no-tablespaces {dbName}",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -117,66 +122,130 @@ namespace ExGradoBack.Repositories
                 using var ms = new MemoryStream();
                 await process.StandardOutput.BaseStream.CopyToAsync(ms);
 
+                string stdError = await process.StandardError.ReadToEndAsync();
                 await process.WaitForExitAsync();
 
-                string error = await process.StandardError.ReadToEndAsync();
+                string stdOutputPreview = Encoding.UTF8.GetString(ms.ToArray(), 0, Math.Min(500, (int)ms.Length));
 
-                if (process.ExitCode != 0 || (!string.IsNullOrEmpty(error) && !error.Contains("Using a password")))
-                    return (false, "Error al crear el respaldo", null!, fileName);
+                if (!string.IsNullOrEmpty(stdError))
+                {
+                    _logger.LogWarning("StdErr: {StdError}", stdError);
+                }
+
+                if (process.ExitCode != 0)
+                {
+                    return (false, $"Error al crear el respaldo: {stdError}", null!, fileName);
+                }
 
                 return (true, "Respaldo creado exitosamente", ms.ToArray(), fileName);
             }
             catch (Exception ex)
             {
-                return (false, "Excepción al crear el respaldo", null!, $"backup.sql:{ex.Message}");
+                return (false, $"Excepción al crear el respaldo: {ex.Message}", null!, $"backup.sql:{ex.Message}");
             }
         }
-
         public async Task<(bool Success, string Message)> RestoreBackupAsync(string backupFilePath)
         {
             try
             {
                 if (!File.Exists(backupFilePath))
-                    return (false, "El archivo de respaldo no existe.");
+                    return (false, $"El archivo de respaldo no existe: {backupFilePath}");
 
-                var psi = new ProcessStartInfo("mysql")
+                backupFilePath = backupFilePath.Replace("\\", "/");
+
+                var cleanupPsi = new ProcessStartInfo
                 {
-                    Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName}",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
+                    FileName = "mysql",
+                    Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} -e \"DROP DATABASE IF EXISTS {dbName}; CREATE DATABASE {dbName};\"",
                     RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
 
-                using var process = new Process { StartInfo = psi };
-                process.Start();
-
-                using var fileStream = new StreamReader(backupFilePath);
-                string? line;
-                while ((line = await fileStream.ReadLineAsync()) != null)
+                using (var cleanupProcess = Process.Start(cleanupPsi))
                 {
-                    await process.StandardInput.WriteLineAsync(line);
+                    if (cleanupProcess == null)
+                        return (false, "No se pudo iniciar el proceso de limpieza MySQL.");
+
+                    string cleanupOut = await cleanupProcess.StandardOutput.ReadToEndAsync();
+                    string cleanupErr = await cleanupProcess.StandardError.ReadToEndAsync();
+                    await cleanupProcess.WaitForExitAsync();
+
+                    if (cleanupProcess.ExitCode != 0)
+                        return (false, $"Error al limpiar la base de datos: {cleanupErr}");
                 }
 
-                process.StandardInput.Close();
-                await process.WaitForExitAsync();
+                // Dependiendo del sistema operativo, el método de restauración cambia
+                bool isWindows = OperatingSystem.IsWindows();
 
-                string stdOutput = await process.StandardOutput.ReadToEndAsync();
-                string stdError = await process.StandardError.ReadToEndAsync();
-
-                if (process.ExitCode == 0)
+                ProcessStartInfo psi;
+                if (isWindows)
                 {
-                    return (true, "Copia de seguridad restaurada exitosamente.");
+                    psi = new ProcessStartInfo("mysql")
+                    {
+                        Arguments = $"-h {dbHost} -u {dbUser} -p{dbPassword} {dbName}",
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = new Process { StartInfo = psi };
+                    process.Start();
+
+                    using var fileStream = new StreamReader(backupFilePath);
+                    string? line;
+                    while ((line = await fileStream.ReadLineAsync()) != null)
+                    {
+                        await process.StandardInput.WriteLineAsync(line);
+                    }
+                    process.StandardInput.Close();
+
+                    string stdOut = await process.StandardOutput.ReadToEndAsync();
+                    string stdErr = await process.StandardError.ReadToEndAsync();
+                    await process.WaitForExitAsync();
+
+                    if (process.ExitCode == 0)
+                        return (true, "Copia de seguridad restaurada exitosamente.");
+                    else
+                        return (false, $"Error al restaurar el backup (Windows): {stdErr}");
                 }
                 else
                 {
-                    return (false, $"Error al restaurar el backup: {stdError}");
+                    var tempFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(backupFilePath));
+                    File.Copy(backupFilePath, tempFile, overwrite: true);
+
+                    psi = new ProcessStartInfo
+                    {
+                        FileName = "sh",
+                        Arguments = $"-c \"mysql -h {dbHost} -u {dbUser} -p{dbPassword} {dbName} < {tempFile}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = Process.Start(psi);
+                    if (process == null)
+                        return (false, "No se pudo iniciar el proceso MySQL (Linux/Docker).");
+
+                    string stdOut = await process.StandardOutput.ReadToEndAsync();
+                    string stdErr = await process.StandardError.ReadToEndAsync();
+                    await process.WaitForExitAsync();
+
+                    File.Delete(tempFile);
+
+                    if (process.ExitCode == 0)
+                        return (true, "Copia de seguridad restaurada exitosamente.");
+                    else
+                        return (false, $"Error al restaurar el backup (Linux/Docker): {stdErr}");
                 }
             }
             catch (Exception ex)
             {
-                return (false, $"Error al restaurar el respaldo: {ex.Message}");
+                return (false, $"Error general al restaurar el respaldo: {ex.Message}");
             }
         }
     }

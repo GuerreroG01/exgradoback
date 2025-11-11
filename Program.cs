@@ -17,6 +17,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using OfficeOpenXml;
+using MySqlConnector;
 
 namespace ExGradoBack
 {
@@ -24,12 +25,12 @@ namespace ExGradoBack
     {
         public static void Main(string[] args)
         {
+            ExcelPackage.License.SetNonCommercialPersonal("ExGradoApp"); 
             var builder = WebApplication.CreateBuilder(args);
             builder.WebHost.ConfigureKestrel(options =>
             {
                 options.ListenAnyIP(5140);
             });
-            ExcelPackage.License.SetNonCommercialPersonal("ExGradoApp");
             DotEnv.Load();
 
             var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "undefined";
@@ -46,7 +47,12 @@ namespace ExGradoBack
             var connectionString = $"Server={dbHost};Database={dbName};User Id={dbUser};Password={dbPassword};Allow User Variables=true;";
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 41)),
-                mySqlOptions => mySqlOptions.EnableRetryOnFailure()));
+                    mySqlOptions =>
+                    {
+                        mySqlOptions.EnableRetryOnFailure();
+                        // Forzar minúsculas
+                        mySqlOptions.MigrationsHistoryTable("__efmigrationshistory");
+                    }));
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -161,7 +167,19 @@ namespace ExGradoBack
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Database.Migrate();
+
+                try
+                {
+                    db.Database.Migrate(); // aplica solo lo que falte
+                }
+                catch (MySqlException ex) when (ex.Message.Contains("already exists"))
+                {
+                    Console.WriteLine("⚠️ Tabla ya existente. Se omite la creación duplicada.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error aplicando migraciones: {ex.Message}");
+                }
             }
 
             app.MapHub<StockHub>("/stockHub");

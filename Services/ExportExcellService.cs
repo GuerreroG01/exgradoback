@@ -8,9 +8,10 @@ namespace ExGradoBack.Services
 {
     public class ExportExcellService : IExportExcellService
     {
-
-        public ExportExcellService()
+        private readonly ILogger<ExportExcellService> _logger;
+        public ExportExcellService(ILogger<ExportExcellService> logger)
         {
+            _logger = logger;
         }
         public byte[] GenerarExcelReport(List<FacturaReporteDto> facturas)
         {
@@ -515,78 +516,114 @@ namespace ExGradoBack.Services
         }
         public byte[] GenerarReporteActividadEmpleados(List<ActividadEmpleadosDto> actividades)
         {
-            using (var package = new ExcelPackage())
+            _logger.LogInformation("🟢 Iniciando generación de reporte de actividad de empleados...");
+
+            try
             {
-                var worksheet = package.Workbook.Worksheets.Add("Actividad de Empleados");
-
-                worksheet.Cells[1, 1].Value = "Reporte de Actividad de Empleados";
-                worksheet.Cells[1, 1, 1, 4].Merge = true;
-                worksheet.Cells[1, 1].Style.Font.Size = 18;
-                worksheet.Cells[1, 1].Style.Font.Bold = true;
-                worksheet.Cells[1, 1].Style.Font.Color.SetColor(Color.White);
-                worksheet.Cells[1, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                worksheet.Cells[1, 1].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#1565c0"));
-                worksheet.Cells[1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                worksheet.Cells[1, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                worksheet.Cells[1, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
-
-                worksheet.Cells[2, 1].Value = "Fecha del informe:";
-                worksheet.Cells[2, 2].Value = DateTime.Now.ToString("dd-MM-yyyy");
-
-                worksheet.Cells[2, 7, 9, 7].Merge = true;
-                worksheet.Cells[2, 8, 9, 8].Merge = true;
-
-                var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "Logo_For_Report.png");
-
-                if (File.Exists(logoPath))
+                using (var package = new ExcelPackage())
                 {
-                    var logo = worksheet.Drawings.AddPicture("LogoEmpresa", logoPath);
-                    logo.SetPosition(1, 10, 6, 5);
-                    logo.SetSize(135, 135);
-                }
+                    _logger.LogInformation("📘 ExcelPackage creado correctamente.");
 
-                worksheet.Cells[3, 1, 5, 4].Merge = true;
-                worksheet.Cells[3, 1].Value = "Este informe muestra las actividades realizadas por los empleados en el sistema (ventas, ediciones, eliminaciones, etc.).";
-                worksheet.Cells[3, 1].Style.WrapText = true;
-                worksheet.Cells[3, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                worksheet.Cells[3, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    var worksheet = package.Workbook.Worksheets.Add("Actividad de Empleados");
+                    _logger.LogInformation("📄 Hoja 'Actividad de Empleados' agregada.");
 
-                int row = 7;
+                    // Encabezado principal
+                    worksheet.Cells[1, 1].Value = "Reporte de Actividad de Empleados";
+                    worksheet.Cells[1, 1, 1, 4].Merge = true;
+                    worksheet.Cells[1, 1].Style.Font.Size = 18;
+                    worksheet.Cells[1, 1].Style.Font.Bold = true;
+                    worksheet.Cells[1, 1].Style.Font.Color.SetColor(Color.White);
+                    worksheet.Cells[1, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    worksheet.Cells[1, 1].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#1565c0"));
+                    worksheet.Cells[1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[1, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    worksheet.Cells[1, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
 
-                string[] headers = { "Empleado", "Acción", "Cantidad de Movimientos"};
-                for (int i = 0; i < headers.Length; i++)
-                {
-                    worksheet.Cells[row, i + 1].Value = headers[i];
-                    worksheet.Cells[row, i + 1].Style.Font.Bold = true;
-                    worksheet.Cells[row, i + 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                    worksheet.Cells[row, i + 1].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#42a5f5"));
-                    worksheet.Cells[row, i + 1].Style.Font.Color.SetColor(Color.White);
-                    worksheet.Cells[row, i + 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    worksheet.Cells[row, i + 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                    worksheet.Cells[row, i + 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
-                }
+                    // Fecha del informe
+                    worksheet.Cells[2, 1].Value = "Fecha del informe:";
+                    worksheet.Cells[2, 2].Value = DateTime.Now.ToString("dd-MM-yyyy");
 
-                row++;
+                    // Comprobación del logo
+                    var logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "Logo_For_Report.png");
+                    _logger.LogInformation("🖼️ Buscando logo en ruta: {LogoPath}", logoPath);
 
-                foreach (var act in actividades)
-                {
-                    worksheet.Cells[row, 1].Value = act.NombreEmpleado;
-                    worksheet.Cells[row, 2].Value = act.Accion;
-                    worksheet.Cells[row, 3].Value = act.Movimientos;
-
-                    for (int col = 1; col <= 3; col++)
+                    if (File.Exists(logoPath))
                     {
-                        worksheet.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                        worksheet.Cells[row, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        try
+                        {
+                            var logo = worksheet.Drawings.AddPicture("LogoEmpresa", logoPath);
+                            logo.SetPosition(1, 10, 6, 5);
+                            logo.SetSize(135, 135);
+                            _logger.LogInformation("✅ Logo insertado correctamente.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "⚠️ Error al insertar el logo en el Excel.");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ Logo no encontrado en la ruta especificada ({Path}).", logoPath);
                     }
 
+                    // Descripción
+                    worksheet.Cells[3, 1, 5, 4].Merge = true;
+                    worksheet.Cells[3, 1].Value = "Este informe muestra las actividades realizadas por los empleados en el sistema (ventas, ediciones, eliminaciones, etc.).";
+                    worksheet.Cells[3, 1].Style.WrapText = true;
+                    worksheet.Cells[3, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[3, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                    // Encabezados de tabla
+                    int row = 7;
+                    string[] headers = { "Empleado", "Acción", "Cantidad de Movimientos" };
+                    _logger.LogInformation("🧾 Escribiendo encabezados de tabla...");
+
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        worksheet.Cells[row, i + 1].Value = headers[i];
+                        worksheet.Cells[row, i + 1].Style.Font.Bold = true;
+                        worksheet.Cells[row, i + 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        worksheet.Cells[row, i + 1].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#42a5f5"));
+                        worksheet.Cells[row, i + 1].Style.Font.Color.SetColor(Color.White);
+                        worksheet.Cells[row, i + 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[row, i + 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                        worksheet.Cells[row, i + 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                    }
+
+                    // Datos
                     row++;
+                    _logger.LogInformation("🧍 Agregando {Count} registros de actividades...", actividades.Count);
+
+                    foreach (var act in actividades)
+                    {
+                        worksheet.Cells[row, 1].Value = act.NombreEmpleado;
+                        worksheet.Cells[row, 2].Value = act.Accion;
+                        worksheet.Cells[row, 3].Value = act.Movimientos;
+
+                        for (int col = 1; col <= 3; col++)
+                        {
+                            worksheet.Cells[row, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            worksheet.Cells[row, col].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                            worksheet.Cells[row, col].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        }
+
+                        row++;
+                    }
+
+                    _logger.LogInformation("📏 Ajustando columnas...");
+                    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                    _logger.LogInformation("💾 Guardando reporte en memoria (GetAsByteArray)...");
+                    var bytes = package.GetAsByteArray(); // <- punto de fallo probable
+                    _logger.LogInformation("✅ Reporte generado correctamente ({ByteCount} bytes).", bytes.Length);
+
+                    return bytes;
                 }
-
-                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-                return package.GetAsByteArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error al generar el reporte de actividad de empleados.");
+                throw; // re-lanzamos para que el controller lo capture
             }
         }
     }

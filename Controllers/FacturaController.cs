@@ -13,11 +13,15 @@ namespace ExGradoBack.Controllers
     {
         private readonly IFacturaService _facturaService;
         private readonly IActividadService _actividadService;
+        private readonly IDetalleFacturaService _detalleFacturaService;
+        private readonly IRepuestoService _repuestoService;
 
-        public FacturaController(IFacturaService facturaService, IActividadService actividadService)
+        public FacturaController(IFacturaService facturaService, IActividadService actividadService, IDetalleFacturaService detalleFacturaService, IRepuestoService repuestoService)
         {
             _facturaService = facturaService;
             _actividadService = actividadService;
+            _detalleFacturaService = detalleFacturaService;
+            _repuestoService = repuestoService;
         }
         [HttpGet("usuario")]
         public IActionResult ObtenerUsuarioActual()
@@ -134,28 +138,40 @@ namespace ExGradoBack.Controllers
             try
             {
                 var facturaAntes = await _facturaService.GetFacturaByIdAsync(id);
-                var facturaAntesCopia = JsonSerializer.Deserialize<Factura>(
-                    JsonSerializer.Serialize(facturaAntes)
-                );
                 if (facturaAntes == null)
                     return NotFound(new { mensaje = "Factura no encontrada." });
 
-                var actualizada = await _facturaService.UpdateFacturaAsync(factura);
+                var detallesAntes = await _detalleFacturaService.GetDetalleFacturaByIdFacturaAsync(id);
+                if (detallesAntes != null)
+                {
+                    facturaAntes.Detalles = detallesAntes;
+                }
 
-                var facturaDespues = await _facturaService.GetFacturaByIdAsync(id);
-                if (actualizada == null)
-                    return BadRequest(new { mensaje = "No se pudo actualizar la factura." });
-
-                var usuario = User.Identity?.Name ?? "Desconocido";
-                await _actividadService.RegistrarAsync(
-                    usuario,
-                    "Edición",
-                    id,
-                    facturaAntesCopia,
-                    facturaDespues
+                var facturaAntesCopia = JsonSerializer.Deserialize<Factura>(
+                    JsonSerializer.Serialize(facturaAntes)
                 );
 
-                return Ok(factura);
+                var facturaActualizada = await _facturaService.UpdateFacturaAsync(factura);
+
+                if (factura.Detalles != null)
+                {
+                    await _detalleFacturaService.UpdateDetalleFacturaAsync(factura.Id, factura.Detalles);
+                }
+
+                var facturaDespues = await _facturaService.GetFacturaByIdAsync(id);
+                var detallesDespues = await _detalleFacturaService.GetDetalleFacturaByIdFacturaAsync(id);
+                if (facturaDespues != null)
+                {
+                    if (detallesDespues != null)
+                    {
+                        facturaDespues.Detalles = detallesDespues;
+                    }
+                }
+
+                var usuario = User.Identity?.Name ?? "Desconocido";
+                await _actividadService.RegistrarAsync(usuario, "Edición", id, facturaAntesCopia, facturaDespues);
+
+                return Ok(facturaDespues);
             }
             catch (Exception ex)
             {
@@ -172,6 +188,40 @@ namespace ExGradoBack.Controllers
                 if (facturaAntes == null)
                     return NotFound(new { mensaje = "Factura no encontrada." });
 
+                var detalles = await _detalleFacturaService.GetDetalleFacturaByIdFacturaAsync(id);
+                facturaAntes.Detalles = detalles ?? new List<DetalleFactura>();
+
+                var detallesFiltrados = new List<object>();
+                foreach (var detalle in facturaAntes.Detalles)
+                {
+                    string nombreRepuesto = string.Empty;
+                    if (detalle.RepuestoId > 0)
+                    {
+                        var repuesto = await _repuestoService.GetRepuestoByIdAsync(detalle.RepuestoId);
+                        nombreRepuesto = repuesto?.Nombre ?? "Desconocido";
+                    }
+
+                    detallesFiltrados.Add(new
+                    {
+                        Repuesto = nombreRepuesto,
+                        detalle.Cantidad,
+                        detalle.PrecioUnitario,
+                        detalle.Subtotal
+                    });
+                }
+
+                var facturaAntesCopia = new
+                {
+                    facturaAntes.Id,
+                    facturaAntes.Fecha,
+                    facturaAntes.NombresCliente,
+                    facturaAntes.TipoCliente,
+                    facturaAntes.Descuento,
+                    facturaAntes.Vendedor,
+                    facturaAntes.Total,
+                    Detalles = detallesFiltrados
+                };
+
                 var eliminada = await _facturaService.DeleteFacturaAsync(id);
                 if (!eliminada)
                     return NotFound(new { mensaje = "No se pudo eliminar la factura." });
@@ -182,7 +232,7 @@ namespace ExGradoBack.Controllers
                     usuario,
                     "Eliminación",
                     id,
-                    facturaAntes,
+                    facturaAntesCopia,
                     null
                 );
 

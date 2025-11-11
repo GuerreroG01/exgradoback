@@ -11,9 +11,11 @@ namespace ExGradoBack.Controllers
     public class BackupController : ControllerBase
     {
         private readonly IBackupService _backupService;
-        public BackupController(IBackupService backupService)
+        private readonly ILogger<BackupController> _logger;
+        public BackupController(IBackupService backupService, ILogger<BackupController> logger)
         {
             _backupService = backupService;
+            _logger = logger;
         }
         [HttpGet]
         public async Task<ActionResult<Backup?>> GetAllConfig()
@@ -39,24 +41,41 @@ namespace ExGradoBack.Controllers
         [HttpGet("descargar")]
         public async Task<IActionResult> DownloadBackup()
         {
+            _logger.LogInformation("[Controller] Iniciando descarga del respaldo...");
+
             var result = await _backupService.CreateBackupAsync();
 
             if (!result.Success)
+            {
+                _logger.LogError("[Controller] Error al crear el respaldo: {Message}", result.Message);
                 return StatusCode(500, new { message = result.Message });
+            }
+
+            _logger.LogInformation("[Controller] Respaldo generado correctamente: {FileName} ({Size} bytes)", result.FileName, result.BackupBytes.Length);
 
             Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{result.FileName}\"");
 
             return File(result.BackupBytes, "application/octet-stream");
         }
 
-        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("restaurar")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> RestaurarBackup([FromForm] IFormFile backupFile)
         {
-            if (backupFile == null || backupFile.Length == 0)
-                return BadRequest("No se recibió el archivo de respaldo.");
+            _logger.LogInformation("[Controller] Petición de restauración recibida...");
 
-            var tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            if (backupFile == null || backupFile.Length == 0)
+            {
+                _logger.LogWarning("[Controller] No se recibió archivo o está vacío.");
+                return BadRequest("No se recibió el archivo de respaldo.");
+            }
+
+            // Ruta temporal dentro del contenedor (asegúrate de crearla en el Dockerfile)
+            var tempDir = "/app/backups/temp";
+            Directory.CreateDirectory(tempDir);
+
+            var tempFilePath = Path.Combine(tempDir, $"{Guid.NewGuid()}.sql");
+            _logger.LogInformation("[Controller] Guardando archivo temporal en: {Path}", tempFilePath);
 
             try
             {
@@ -65,21 +84,31 @@ namespace ExGradoBack.Controllers
                     await backupFile.CopyToAsync(stream);
                 }
 
+                _logger.LogInformation("[Controller] Archivo guardado correctamente. Tamaño: {Length} bytes", backupFile.Length);
+
                 var result = await _backupService.RestoreBackupAsync(tempFilePath);
 
-                if (result.Success)
-                    return Ok(result.Message);
+                _logger.LogInformation("[Controller] Resultado de la restauración: {Message}", result.Message);
 
+                if (result.Success)
+                {
+                    _logger.LogInformation("[Controller] Restauración completada con éxito.");
+                    return Ok(result.Message);
+                }
+
+                _logger.LogWarning("[Controller] Falló la restauración: {Message}", result.Message);
                 return BadRequest(result.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "[Controller] Error al procesar la restauración.");
                 return BadRequest($"Error al restaurar el respaldo: {ex.Message}");
             }
             finally
             {
                 if (System.IO.File.Exists(tempFilePath))
                 {
+                    _logger.LogInformation("[Controller] Eliminando archivo temporal: {Path}", tempFilePath);
                     System.IO.File.Delete(tempFilePath);
                 }
             }

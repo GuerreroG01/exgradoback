@@ -11,9 +11,11 @@ namespace ExGradoBack.Controllers
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
-        public ReportController(IReportService reportService)
+        private readonly ILogger<ReportController> _logger;
+        public ReportController(IReportService reportService, ILogger<ReportController> logger)
         {
             _reportService = reportService;
+            _logger = logger;
         }
 
         [HttpGet("reporteVentas-mensual/excel")]
@@ -77,14 +79,42 @@ namespace ExGradoBack.Controllers
         [HttpGet("Reporte_ActividadEmpleados/excel")]
         public async Task<IActionResult> DescargarReporteActividadEmpleados()
         {
-            var excelBytes = await _reportService.GenerarReporteActividadEmpleados();
+            _logger.LogInformation("Inicio de {Metodo} a las {Hora}", nameof(DescargarReporteActividadEmpleados), DateTime.UtcNow);
 
-            if (excelBytes == null || excelBytes.Length == 0)
-                return NotFound("No se encontrarón resultados");
+            try
+            {
+                _logger.LogInformation("Llamando a _reportService.GenerarReporteActividadEmpleados()");
+                var excelBytes = await _reportService.GenerarReporteActividadEmpleados();
 
-            var fecha = DateTime.UtcNow.AddHours(-6).ToString("dd-MM-yyyy");
-            var nombreArchivo = $"Reporte de Actividad_{fecha}.xlsx";
-            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombreArchivo);
+                if (excelBytes == null)
+                {
+                    _logger.LogWarning("El servicio devolvió null para el reporte de actividad de empleados.");
+                    return NotFound("No se encontraron resultados (bytes nulos).");
+                }
+
+                if (excelBytes.Length == 0)
+                {
+                    _logger.LogWarning("El servicio devolvió un archivo vacío para el reporte de actividad de empleados.");
+                    return NotFound("No se encontraron resultados (archivo vacío).");
+                }
+
+                var fecha = DateTime.UtcNow.AddHours(-6).ToString("dd-MM-yyyy");
+                var nombreArchivo = $"Reporte de Actividad_{fecha}.xlsx";
+
+                _logger.LogInformation("Reporte generado correctamente. Tamaño del archivo: {TamañoBytes} bytes. Nombre del archivo: {NombreArchivo}",
+                    excelBytes.Length, nombreArchivo);
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                _logger.LogInformation("Preparando archivo para descarga con Content-Type: {ContentType}", contentType);
+
+                _logger.LogInformation("Finalización exitosa de {Metodo} a las {Hora}", nameof(DescargarReporteActividadEmpleados), DateTime.UtcNow);
+                return File(excelBytes, contentType, nombreArchivo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocurrió un error inesperado en {Metodo} a las {Hora}", nameof(DescargarReporteActividadEmpleados), DateTime.UtcNow);
+                return StatusCode(500, "Error interno al generar el reporte de actividad de empleados.");
+            }
         }
     }
 }

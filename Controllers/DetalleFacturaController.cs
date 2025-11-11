@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ExGradoBack.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DetalleFacturaController : ControllerBase
@@ -45,27 +45,6 @@ namespace ExGradoBack.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(new { mensaje = ex.Message });
-            }
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<DetalleFactura>> UpdateDetalle(int id, [FromBody] DetalleFactura detalle)
-        {
-            if (id != detalle.Id)
-                return BadRequest(new { mensaje = "El id de la URL no coincide con el de los detalles de la factura" });
-
-            try
-            {
-                var detalleActualizado = await _detalleFacturaService.UpdateDetalleFacturaAsync(detalle);
-                return Ok(detalleActualizado);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { mensaje = ex.Message });
             }
         }
 

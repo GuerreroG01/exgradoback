@@ -30,6 +30,13 @@ namespace ExGradoBack.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                var tableName = entity.GetTableName();
+                if (tableName != null)
+                    entity.SetTableName(tableName.ToLowerInvariant());
+            }
+            modelBuilder.HasAnnotation("Relational:HistoryTableName", "__efmigrationshistory");
             modelBuilder.Entity<Auth>()
                 .HasOne(a => a.InfoUser)
                 .WithOne(i => i.Auth)

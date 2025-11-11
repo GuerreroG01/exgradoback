@@ -58,72 +58,71 @@ namespace ExGradoBack.Services
 
             return await _detalleFacturaRepository.CreateDetalleFacturaAsync(detalle);
         }
-        public async Task<DetalleFactura> UpdateDetalleFacturaAsync(DetalleFactura detalle)
+        public async Task<DetalleFactura> UpdateSingleAsync(DetalleFactura detalle)
         {
-            try
+            var detalleOriginal = await _detalleFacturaRepository.GetDetalleFacturaByIdAsync(detalle.Id);
+            if (detalleOriginal == null)
+                throw new Exception("El detalle de factura a actualizar no existe");
+
+            var repuesto = await _repuestoRepository.GetRepuestoByIdAsync(detalle.RepuestoId);
+            if (repuesto == null)
+                throw new Exception($"El repuesto con Id {detalle.RepuestoId} no existe");
+
+            int diferencia = detalle.Cantidad - detalleOriginal.Cantidad;
+
+            if (repuesto.StockActual < diferencia)
+                throw new Exception("No hay suficiente stock para realizar esta modificación");
+
+            repuesto.StockActual -= diferencia;
+            await _repuestoRepository.UpdateRepuestoAsync(repuesto);
+
+            await _hubContext.Clients.All.SendAsync("ActualizarStock", new
             {
-                if (!await _facturaRepository.FacturaExistsAsync(detalle.FacturaId))
-                    throw new Exception($"La factura con Id {detalle.FacturaId} no existe");
+                id = repuesto.Id,
+                nuevoStock = repuesto.StockActual
+            });
 
-                if (!await _repuestoRepository.RepuestoExistsAsync(detalle.RepuestoId))
-                    throw new Exception($"El repuesto con Id {detalle.RepuestoId} no existe");
+            detalleOriginal.Cantidad = detalle.Cantidad;
+            detalleOriginal.PrecioUnitario = detalle.PrecioUnitario;
+            detalleOriginal.Subtotal = detalle.Cantidad * detalle.PrecioUnitario;
+            detalleOriginal.RepuestoId = detalle.RepuestoId;
 
-                if (detalle.Subtotal <= 0)
-                    throw new ArgumentException("El subtotal debe ser mayor a 0.");
+            return await _detalleFacturaRepository.UpdateDetalleFacturaAsync(detalleOriginal);
+        }
+        public async Task UpdateDetalleFacturaAsync(int facturaId, ICollection<DetalleFactura> detallesNuevos)
+        {
+            var detallesExistentes = await _detalleFacturaRepository.GetDetalleFacturaByIdFacturaAsync(facturaId)
+                                    ?? new List<DetalleFactura>();
 
-                var detallesExistentes = await _detalleFacturaRepository.GetDetalleFacturaByIdFacturaAsync(detalle.FacturaId)
-                                        ?? new List<DetalleFactura>();
+            var detallesAEliminar = detallesExistentes
+                .Where(d => !detallesNuevos.Any(n => n.Id == d.Id))
+                .ToList();
 
-                var detallesAEliminar = detallesExistentes
-                    .Where(d => d.Id != detalle.Id)
-                    .ToList();
-
-                foreach (var d in detallesAEliminar)
-                {
-                    await DeleteDetalleFacturaAsync(d.Id);
-                }
-
-                var detalleOriginal = await _detalleFacturaRepository.GetDetalleFacturaByIdAsync(detalle.Id);
-                if (detalleOriginal == null)
-                    throw new Exception("El detalle de factura a actualizar no existe");
-
-
-                var repuesto = await _repuestoRepository.GetRepuestoByIdAsync(detalle.RepuestoId);
-                if (repuesto == null)
-                    throw new Exception($"El repuesto con Id {detalle.RepuestoId} no existe");
-
-                int cantidadOriginal = detalleOriginal.Cantidad;
-                int cantidadNueva = detalle.Cantidad;
-                int diferencia = cantidadNueva - cantidadOriginal;
-
-                repuesto.StockActual -= diferencia;
-                
-                if (repuesto.StockActual < 0)
-                    throw new Exception("No hay suficiente stock para realizar esta modificación");
-
-                await _repuestoRepository.UpdateRepuestoAsync(repuesto);
-
-                await _hubContext.Clients.All.SendAsync("ActualizarStock", new
-                {
-                    id = repuesto.Id,
-                    nuevoStock = repuesto.StockActual
-                });
-
-                detalleOriginal.Cantidad = detalle.Cantidad;
-                detalleOriginal.PrecioUnitario = detalle.PrecioUnitario;
-                detalleOriginal.Subtotal = detalle.Subtotal;
-                detalleOriginal.FacturaId = detalle.FacturaId;
-                detalleOriginal.RepuestoId = detalle.RepuestoId;
-
-
-                var resultado = await _detalleFacturaRepository.UpdateDetalleFacturaAsync(detalleOriginal);
-
-                return resultado;
+            foreach (var d in detallesAEliminar)
+            {
+                await DeleteDetalleFacturaAsync(d.Id);
             }
-            catch (Exception ex)
+
+            foreach (var detalle in detallesNuevos)
             {
-                _logger.LogError(ex, "Error actualizando el detalle de factura con ID {DetalleId}", detalle.Id);
-                throw;
+                detalle.FacturaId = facturaId;
+                if (detalle.Id > 0)
+                {
+                    var existeEnDB = detallesExistentes.Any(d => d.Id == detalle.Id);
+                    if (existeEnDB)
+                    {
+                        await UpdateSingleAsync(detalle);
+                    }
+                    else
+                    {
+                        detalle.Id = 0;
+                        await CreateDetalleFacturaAsync(detalle);
+                    }
+                }
+                else
+                {
+                    await CreateDetalleFacturaAsync(detalle);
+                }
             }
         }
         public async Task<bool> DeleteDetalleFacturaAsync(int id)
