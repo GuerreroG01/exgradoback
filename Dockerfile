@@ -1,6 +1,3 @@
-# =============================================
-# Imagen base para .NET 9 Runtime (versión estable)
-# =============================================
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 5140
@@ -23,39 +20,33 @@ ENV LANG=en_US.UTF-8 \
     TMPDIR=/tmp \
     HOME=/root
 
-# Crear carpetas con permisos correctos
+# Crea carpetas con permisos correctos
 RUN mkdir -p /app/backups/temp /tmp /root/.config/EPPlus && chmod -R 777 /app /tmp /root/.config
 
-# Copiar archivos estáticos
+# Copia archivos estáticos
 COPY wwwroot /app/wwwroot
 
-# Instalar dockerize (esperar a MySQL)
+# Instala dockerize
 ADD https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz /tmp/
 RUN tar -C /usr/local/bin -xzvf /tmp/dockerize-linux-amd64-v0.6.1.tar.gz && \
     rm /tmp/dockerize-linux-amd64-v0.6.1.tar.gz
 
-# =============================================
-# Imagen para compilar y publicar (SDK estable .NET 9)
-# =============================================
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copiar archivos del proyecto
+# Copia archivos del proyecto
 COPY . .
 
-# Restaurar dependencias
+# Restaura dependencias
 RUN dotnet restore
 
-# Publicar en modo Release
+# Publica en modo Release
 RUN dotnet publish -c Release -o /app/publish
 
-# =============================================
-# Imagen final
-# =============================================
 FROM base AS final
 WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Ejecutar la aplicación con dockerize (espera MySQL)
+# Ejecuta la aplicación con dockerize para esperar mysql
 ENTRYPOINT ["dockerize", "-wait", "tcp://mysql:3306", "-timeout", "60s", "-wait-retry-interval", "5s", "dotnet", "ExGradoBack.dll"]
