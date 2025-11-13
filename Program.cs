@@ -18,6 +18,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using OfficeOpenXml;
 using MySqlConnector;
+using ExGradoBack.Filters;
 
 namespace ExGradoBack
 {
@@ -194,7 +195,18 @@ namespace ExGradoBack
             app.UseCors("AllowLocalNetwork");
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseHangfireDashboard();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseHangfireDashboard("/hangfire", new DashboardOptions
+                {
+                    Authorization = new[] { new AutorizacionPanelHangfire() }
+                });
+            }
+            else
+            {
+                app.UseHangfireDashboard("/hangfire");
+            }
+
             var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             if (!Directory.Exists(wwwrootPath))
             {
