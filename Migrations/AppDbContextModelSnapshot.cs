@@ -18,6 +18,7 @@ namespace ExGradoBack.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("Relational:HistoryTableName", "__efmigrationshistory")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -52,7 +53,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ActividadFactura");
+                    b.ToTable("actividadfactura");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Auth", b =>
@@ -86,13 +87,13 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Username")
                         .HasDatabaseName("IX_Auth_Username");
 
-                    b.ToTable("Auth");
+                    b.ToTable("auth");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            FechaRegistro = new DateTime(2025, 10, 23, 12, 4, 11, 609, DateTimeKind.Local).AddTicks(8083),
+                            FechaRegistro = new DateTime(2026, 4, 16, 16, 23, 37, 802, DateTimeKind.Local).AddTicks(6430),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 1,
                             Username = "admin"
@@ -100,7 +101,7 @@ namespace ExGradoBack.Migrations
                         new
                         {
                             Id = 2,
-                            FechaRegistro = new DateTime(2025, 10, 23, 12, 4, 11, 609, DateTimeKind.Local).AddTicks(8089),
+                            FechaRegistro = new DateTime(2026, 4, 16, 16, 23, 37, 802, DateTimeKind.Local).AddTicks(6433),
                             Password = "$2a$11$kvmh2pY5/uqViNOj5A9OTOdqi9cRjSRFsbdmKfzEpkLcXTceTe8rS",
                             RolId = 2,
                             Username = "Invitado"
@@ -134,7 +135,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Backup");
+                    b.ToTable("backup");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.DetalleFactura", b =>
@@ -166,7 +167,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasIndex("RepuestoId");
 
-                    b.ToTable("DetalleFactura");
+                    b.ToTable("detallefactura");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.DetalleOrdenCompra", b =>
@@ -198,7 +199,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasIndex("RepuestoId");
 
-                    b.ToTable("DetalleOrdenCompra");
+                    b.ToTable("detalleordencompra");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Factura", b =>
@@ -235,7 +236,7 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Fecha")
                         .HasDatabaseName("IX_Factura_Fecha");
 
-                    b.ToTable("Factura");
+                    b.ToTable("factura");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.InfoUser", b =>
@@ -282,7 +283,7 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("AuthId")
                         .IsUnique();
 
-                    b.ToTable("InfoUsers");
+                    b.ToTable("infousers");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.MarcaRepuesto", b =>
@@ -308,7 +309,7 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_Nombre_Marca");
 
-                    b.ToTable("MarcaRepuesto");
+                    b.ToTable("marcarepuesto");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.OrdenCompra", b =>
@@ -343,7 +344,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasIndex("ProveedorId");
 
-                    b.ToTable("OrdenCompra");
+                    b.ToTable("ordencompra");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Proveedor", b =>
@@ -355,6 +356,7 @@ namespace ExGradoBack.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Ciudad")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
@@ -367,6 +369,7 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("varchar(20)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
@@ -385,6 +388,7 @@ namespace ExGradoBack.Migrations
                         .HasColumnType("varchar(200)");
 
                     b.Property<string>("Pais")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
@@ -401,7 +405,7 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Pais", "Ciudad")
                         .HasDatabaseName("IX_PaisCiudad_Proveedor");
 
-                    b.ToTable("Proveedor");
+                    b.ToTable("proveedor");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.RefreshToken", b =>
@@ -426,7 +430,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshToken");
+                    b.ToTable("refreshtoken");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Repuesto", b =>
@@ -478,7 +482,7 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Ubicacion")
                         .HasDatabaseName("IX_Ubicacion_Repuesto");
 
-                    b.ToTable("Repuesto");
+                    b.ToTable("repuesto");
                 });
 
             modelBuilder.Entity("ExGradoBack.Models.Rol", b =>
@@ -496,7 +500,7 @@ namespace ExGradoBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rol");
+                    b.ToTable("rol");
 
                     b.HasData(
                         new
@@ -568,7 +572,7 @@ namespace ExGradoBack.Migrations
                     b.HasIndex("Marca", "Anio")
                         .HasDatabaseName("IX_VehiculoInfo_Marca_Anio");
 
-                    b.ToTable("VehiculoInfo");
+                    b.ToTable("vehiculoinfo");
                 });
 
             modelBuilder.Entity("RepuestoVehiculoInfo", b =>
